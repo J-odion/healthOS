@@ -62,10 +62,10 @@ async function main() {
   });
 
   // Seed default department
-  const itDept = await prisma.department.upsert({
-    where: { name: 'IT Department' },
+  const generalDept = await prisma.department.upsert({
+    where: { name: 'General Department' },
     update: {},
-    create: { name: 'IT Department', description: 'Information Technology' },
+    create: { name: 'General Department', description: 'General Purpose Department' },
   });
 
   // Associate Staff with IT Admin
@@ -77,12 +77,48 @@ async function main() {
       firstName: 'System',
       lastName: 'Admin',
       email: 'admin@hospios.local',
-      departmentId: itDept.id,
+      departmentId: generalDept.id,
       roleId: adminRole!.id,
     }
   });
 
-  console.log('Seeding completed.');
+  // Create default users for ALL other roles
+  const defaultPassword = await argon2.hash('Password@123!');
+  
+  for (const roleName of roles) {
+    if (roleName === 'ITAdmin' || roleName === 'Patient') continue; // Skip admin (already created) and Patient (not staff)
+
+    const username = roleName.toLowerCase();
+    const email = `${username}@hospios.local`;
+
+    const user = await prisma.user.upsert({
+      where: { username },
+      update: {},
+      create: {
+        username,
+        passwordHash: defaultPassword,
+        isActive: true,
+      },
+    });
+
+    const roleRecord = await prisma.role.findUnique({ where: { name: roleName } });
+    if (roleRecord) {
+      await prisma.staff.upsert({
+        where: { email },
+        update: {},
+        create: {
+          userId: user.id,
+          firstName: 'Default',
+          lastName: roleName,
+          email,
+          departmentId: generalDept.id,
+          roleId: roleRecord.id,
+        }
+      });
+    }
+  }
+
+  console.log('Seeding completed. Default password is: Password@123!');
 }
 
 main()
