@@ -1,0 +1,540 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  username       String    @unique
+  passwordHash   String
+  isActive       Boolean   @default(true)
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+  mfaSecret      String?
+  mfaEnabled     Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  staff          Staff?
+  auditLogs      AuditLog[]
+}
+
+model Staff {
+  id           String    @id @default(uuid())
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id])
+  firstName    String
+  lastName     String
+  email        String    @unique
+  phone        String?
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  roleId       String
+  role         Role      @relation(fields: [roleId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  schedules    DoctorSchedule[]
+  leaves       DoctorLeave[]
+  appointments Appointment[]
+  vitals       Vital[]
+  clinicalNotes ClinicalNote[]
+  amendments   NoteAmendment[]
+  triageHistory TriagePriorityHistory[]
+  diagnoses    Diagnosis[]
+  prescriptions Prescription[]
+  labOrders    LabOrder[]
+  labResults   LabResult[]
+  dispensations PharmacyDispense[]
+  stockMovements StockMovement[]
+  payments     Payment[]
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  staff       Staff[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  name        String           @unique // e.g., "department:create"
+  description String?
+  roles       RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model RolePermission {
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  staff       Staff[]
+  queueItems  Queue[]
+  appointments Appointment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  roleName    String?
+  action      String
+  entity      String
+  entityId    String
+  beforeValue Json?
+  afterValue  Json?
+  ipAddress   String?
+  device      String?
+  status      String   // e.g., SUCCESS, FAILED
+  timestamp   DateTime @default(now())
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+// ==========================================
+// Phase 1: Patient Management & Check-in
+// ==========================================
+
+model Patient {
+  id             String    @id @default(uuid())
+  hospitalNumber String    @unique // e.g. SHSH-YYYY-XXXX
+  firstName      String
+  lastName       String
+  middleName     String?
+  dateOfBirth    DateTime
+  gender         String
+  phone          String
+  email          String?
+  address        String?
+  bloodGroup     String?
+  genotype       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  identifiers    PatientIdentifier[]
+  cards          PatientCard[]
+  nextOfKin      NextOfKin[]
+  insurance      Insurance[]
+  documents      PatientDocument[]
+  encounters     Encounter[]
+  appointments   Appointment[]
+  vitals         Vital[]
+  diagnoses      Diagnosis[]
+  prescriptions  Prescription[]
+  labOrders      LabOrder[]
+  invoices       Invoice[]
+}
+
+model PatientIdentifier {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  type         String   // e.g. NIN, Passport, DriverLicense
+  value        String
+  issuedDate   DateTime?
+  expiryDate   DateTime?
+  createdAt    DateTime @default(now())
+}
+
+model PatientCard {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  uid          String   @unique // QR Code Payload / Barcode string
+  status       String   @default("ACTIVE") // ACTIVE, INACTIVE, LOST, REPLACED
+  issuedAt     DateTime @default(now())
+  deactivatedAt DateTime?
+}
+
+model NextOfKin {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  name         String
+  relationship String
+  phone        String
+  address      String?
+  createdAt    DateTime @default(now())
+}
+
+// Stub for Phase 8
+model Insurance {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  providerName String
+  hmoNumber    String
+  planType     String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+// Stub for Phase 9
+model PatientDocument {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  title        String
+  type         String
+  fileUrl      String
+  createdAt    DateTime @default(now())
+}
+
+// Partial model for Phase 1 (Check-in) and Phase 3 (EMR)
+model Encounter {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  type         String   // IN_PERSON, TELEMEDICINE
+  status       String   @default("CHECKED_IN") // CHECKED_IN, TRIAGE, DOCTOR, COMPLETED
+  triagePriority String @default("NORMAL") // NORMAL, URGENT, EMERGENCY
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  queueItems   Queue[]
+  vitals       Vital[]
+  clinicalNotes ClinicalNote[]
+  triageHistory TriagePriorityHistory[]
+  diagnoses    Diagnosis[]
+  prescriptions Prescription[]
+  labOrders    LabOrder[]
+  invoices     Invoice[]
+}
+
+model Queue {
+  id           String     @id @default(uuid())
+  encounterId  String
+  encounter    Encounter  @relation(fields: [encounterId], references: [id])
+  departmentId String?    // e.g. General OPD, Lab
+  department   Department? @relation(fields: [departmentId], references: [id])
+  status       String     @default("WAITING") // WAITING, IN_PROGRESS, DONE
+  priority     String     @default("NORMAL") // NORMAL, URGENT, EMERGENCY
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// ==========================================
+// Phase 3: Nursing, Vitals & EMR Core
+// ==========================================
+
+model Vital {
+  id           String    @id @default(uuid())
+  encounterId  String
+  encounter    Encounter @relation(fields: [encounterId], references: [id])
+  patientId    String
+  patient      Patient   @relation(fields: [patientId], references: [id])
+  systolicBP   Int?
+  diastolicBP  Int?
+  temperature  Float?
+  pulse        Int?
+  spO2         Int?
+  weight       Float?
+  height       Float?
+  authorId     String
+  author       Staff     @relation(fields: [authorId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model ClinicalNote {
+  id           String    @id @default(uuid())
+  encounterId  String
+  encounter    Encounter @relation(fields: [encounterId], references: [id])
+  type         String    // NURSING, DOCTOR
+  content      String
+  authorId     String
+  author       Staff     @relation(fields: [authorId], references: [id])
+  isSigned     Boolean   @default(false)
+  signedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  amendments   NoteAmendment[]
+}
+
+model NoteAmendment {
+  id           String    @id @default(uuid())
+  noteId       String
+  note         ClinicalNote @relation(fields: [noteId], references: [id])
+  content      String
+  authorId     String
+  author       Staff     @relation(fields: [authorId], references: [id])
+  createdAt    DateTime  @default(now())
+}
+
+model TriagePriorityHistory {
+  id           String    @id @default(uuid())
+  encounterId  String
+  encounter    Encounter @relation(fields: [encounterId], references: [id])
+  oldPriority  String?
+  newPriority  String
+  authorId     String
+  author       Staff     @relation(fields: [authorId], references: [id])
+  createdAt    DateTime  @default(now())
+}
+
+// ==========================================
+// Phase 2: Scheduling & Queue
+// ==========================================
+
+model DoctorSchedule {
+  id           String   @id @default(uuid())
+  doctorId     String
+  doctor       Staff    @relation(fields: [doctorId], references: [id])
+  dayOfWeek    Int      // 0-6 (Sun-Sat)
+  startTime    String   // e.g. "09:00"
+  endTime      String   // e.g. "17:00"
+  slotDuration Int      // in minutes, e.g. 15, 30
+  maxCapacity  Int?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model DoctorLeave {
+  id           String   @id @default(uuid())
+  doctorId     String
+  doctor       Staff    @relation(fields: [doctorId], references: [id])
+  startDate    DateTime
+  endDate      DateTime
+  reason       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Appointment {
+  id           String   @id @default(uuid())
+  patientId    String
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  doctorId     String?
+  doctor       Staff?   @relation(fields: [doctorId], references: [id])
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  type         String   // CONSULTATION, FOLLOW_UP, LAB, IMAGING, PROCEDURE, TELEMEDICINE
+  date         DateTime
+  timeSlot     String   // e.g. "09:30"
+  status       String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED, NO_SHOW
+  cancelReason String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ==========================================
+// Phase 4: Consultation & E-Prescription
+// ==========================================
+
+model Diagnosis {
+  id           String    @id @default(uuid())
+  encounterId  String
+  encounter    Encounter @relation(fields: [encounterId], references: [id])
+  patientId    String
+  patient      Patient   @relation(fields: [patientId], references: [id])
+  icd10Code    String
+  description  String
+  type         String    @default("PRIMARY") // PRIMARY, SECONDARY
+  authorId     String
+  author       Staff     @relation(fields: [authorId], references: [id])
+  createdAt    DateTime  @default(now())
+}
+
+model Prescription {
+  id           String    @id @default(uuid())
+  encounterId  String
+  encounter    Encounter @relation(fields: [encounterId], references: [id])
+  patientId    String
+  patient      Patient   @relation(fields: [patientId], references: [id])
+  authorId     String
+  author       Staff     @relation(fields: [authorId], references: [id])
+  notes        String?
+  status       String    @default("ACTIVE") // ACTIVE, DISPENSED, CANCELLED
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  items        PrescriptionItem[]
+}
+
+model PrescriptionItem {
+  id             String       @id @default(uuid())
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id])
+  medicationId   String
+  medication     Medication   @relation(fields: [medicationId], references: [id])
+  dosage         String
+  frequency      String
+  duration       String
+  route          String?
+  quantity       Int?
+  
+  dispenses      PharmacyDispense[]
+}
+
+model Medication {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  category     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  prescriptionItems PrescriptionItem[]
+  inventoryBatches  InventoryBatch[]
+}
+
+// ==========================================
+// Phase 5: Laboratory & Diagnostics
+// ==========================================
+
+model LabTestCatalog {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  category       String   // e.g. Hematology, Microbiology
+  defaultUnits   String?
+  referenceRange String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  orders         LabOrder[]
+}
+
+model LabOrder {
+  id             String         @id @default(uuid())
+  encounterId    String
+  encounter      Encounter      @relation(fields: [encounterId], references: [id])
+  patientId      String
+  patient        Patient        @relation(fields: [patientId], references: [id])
+  testId         String
+  test           LabTestCatalog @relation(fields: [testId], references: [id])
+  status         String         @default("ORDERED") // ORDERED, SAMPLE_COLLECTED, ANALYZING, COMPLETED
+  authorId       String
+  author         Staff          @relation(fields: [authorId], references: [id])
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  results        LabResult[]
+}
+
+model LabResult {
+  id             String    @id @default(uuid())
+  orderId        String
+  order          LabOrder  @relation(fields: [orderId], references: [id])
+  value          String
+  referenceRange String?
+  isAbnormal     Boolean   @default(false)
+  authorId       String
+  author         Staff     @relation(fields: [authorId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// ==========================================
+// Phase 6: Pharmacy & Dispensing
+// ==========================================
+
+model PharmacyDispense {
+  id                 String           @id @default(uuid())
+  prescriptionItemId String
+  prescriptionItem   PrescriptionItem @relation(fields: [prescriptionItemId], references: [id])
+  quantity           Int
+  authorId           String
+  author             Staff            @relation(fields: [authorId], references: [id])
+  createdAt          DateTime         @default(now())
+}
+
+model InventoryBatch {
+  id           String   @id @default(uuid())
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id])
+  batchNumber  String
+  expiryDate   DateTime
+  quantity     Int
+  unitCost     Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  movements    StockMovement[]
+}
+
+model StockMovement {
+  id           String         @id @default(uuid())
+  batchId      String
+  batch        InventoryBatch @relation(fields: [batchId], references: [id])
+  quantity     Int            // negative for dispense, positive for restock
+  reason       String         // DISPENSE, RESTOCK, EXPIRED, DAMAGED
+  authorId     String
+  author       Staff          @relation(fields: [authorId], references: [id])
+  createdAt    DateTime       @default(now())
+}
+
+// ==========================================
+// Phase 7: Billing & Payments
+// ==========================================
+
+model Invoice {
+  id           String        @id @default(uuid())
+  invoiceNo    String        @unique // e.g. INV-YYYYMMDD-XXXX
+  patientId    String
+  patient      Patient       @relation(fields: [patientId], references: [id])
+  encounterId  String?
+  encounter    Encounter?    @relation(fields: [encounterId], references: [id])
+  status       String        @default("DRAFT") // DRAFT, ISSUED, PARTIAL, PAID, VOID
+  totalAmount  Float         @default(0)
+  amountPaid   Float         @default(0)
+  issuedAt     DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  items        InvoiceItem[]
+  payments     Payment[]
+}
+
+model InvoiceItem {
+  id           String   @id @default(uuid())
+  invoiceId    String
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id])
+  description  String
+  quantity     Int      @default(1)
+  unitPrice    Float
+  totalPrice   Float
+  createdAt    DateTime @default(now())
+}
+
+model Payment {
+  id           String   @id @default(uuid())
+  invoiceId    String
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id])
+  amount       Float
+  method       String   // CASH, POS, TRANSFER, ONLINE
+  reference    String?  // transaction ID
+  authorId     String?  // nullable for online payments
+  author       Staff?   @relation(fields: [authorId], references: [id])
+  createdAt    DateTime @default(now())
+}
