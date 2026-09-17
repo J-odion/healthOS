@@ -1,16 +1,23 @@
 import { useAuthStore } from '../../store/authStore';
-import { Bell, LogOut, User as UserIcon } from 'lucide-react';
+import { Bell, LogOut, User as UserIcon, Menu } from 'lucide-react';
 
-export default function Header() {
+export default function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-10">
-      <h1 className="text-lg font-semibold text-slate-800">
-        {/* We can make this dynamic based on route later */}
-        Overview
-      </h1>
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shadow-sm z-10">
+      <div className="flex items-center">
+        <button 
+          onClick={onMenuClick}
+          className="mr-3 p-2 -ml-2 text-slate-500 hover:text-slate-700 md:hidden"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+        <h1 className="text-lg font-semibold text-slate-800">
+          Overview
+        </h1>
+      </div>
       
       <div className="flex items-center space-x-6">
         <button className="text-slate-400 hover:text-slate-600 transition-colors relative">

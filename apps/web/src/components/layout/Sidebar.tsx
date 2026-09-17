@@ -7,12 +7,13 @@ import {
   Activity, 
   FlaskConical, 
   Pill, 
-  Receipt 
+  Receipt,
+  X
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) {
   const user = useAuthStore((state) => state.user);
   
   // Base links available to all
@@ -42,9 +43,20 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shadow-sm">
-      <div className="h-16 flex items-center px-6 border-b border-slate-100">
+    <aside className={twMerge(
+      clsx(
+        "bg-white border-r border-slate-200 flex flex-col shadow-sm fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 md:relative md:translate-x-0",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )
+    )}>
+      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
         <span className="text-xl font-bold text-brand-600 tracking-tight">HospiOS</span>
+        <button 
+          onClick={() => setIsOpen(false)}
+          className="md:hidden p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-md"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         <p className="px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
@@ -62,6 +74,7 @@ export default function Sidebar() {
                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               )
             )}
+            onClick={() => setIsOpen(false)}
           >
             {({ isActive }) => (
               <>
