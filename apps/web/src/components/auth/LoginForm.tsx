@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../lib/axios';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginForm() {
-  const [username, setUsername] = useState('doctor');
+  const [email, setEmail] = useState('doctor@hospios.local');
   const [password, setPassword] = useState('Password@123!');
-  const [useMfa, setUseMfa] = useState(false);
-  const [mfaToken, setMfaToken] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -20,9 +20,8 @@ export default function LoginForm() {
 
     try {
       const response = await api.post('/auth/login', { 
-        username, 
-        password, 
-        mfaToken: useMfa ? mfaToken : undefined 
+        username: email, // backend expects username or identifier
+        password 
       });
       const { access_token, user } = response.data;
       setAuth(access_token, user);
@@ -42,54 +41,39 @@ export default function LoginForm() {
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-slate-700">Username</label>
+        <label className="block text-sm font-medium text-slate-700">Email Address</label>
         <input 
-          type="text" 
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm p-2 border" 
           required 
         />
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-700">Password</label>
-        <input 
-          type="password" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm p-2 border" 
-          required 
-        />
-      </div>
-      <div className="flex items-center pt-2">
-        <input
-          id="use-mfa"
-          type="checkbox"
-          checked={useMfa}
-          onChange={(e) => {
-            setUseMfa(e.target.checked);
-            if (!e.target.checked) setMfaToken('');
-          }}
-          className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-slate-300 rounded"
-        />
-        <label htmlFor="use-mfa" className="ml-2 block text-sm text-slate-700">
-          I have an MFA token
-        </label>
-      </div>
-
-      {useMfa && (
-        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-          <label className="block text-sm font-medium text-slate-700">MFA Token</label>
+        <div className="relative mt-1">
           <input 
-            type="text" 
-            value={mfaToken}
-            onChange={(e) => setMfaToken(e.target.value)}
-            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm p-2 border" 
-            placeholder="6-digit code"
-            required={useMfa}
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm p-2 border pr-10" 
+            required 
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 focus:outline-none"
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Eye className="h-5 w-5" aria-hidden="true" />
+            )}
+          </button>
         </div>
-      )}
+      </div>
+      
       <button 
         type="submit" 
         disabled={isLoading}

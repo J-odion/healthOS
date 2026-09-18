@@ -12,9 +12,14 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
-      where: { username },
+  async validateUser(identifier: string, pass: string): Promise<any> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: identifier },
+          { staff: { email: identifier } }
+        ]
+      },
       include: { staff: { include: { role: true } } }
     });
 
