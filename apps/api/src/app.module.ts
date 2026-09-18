@@ -17,9 +17,10 @@ import { StorageModule } from './storage/storage.module.js';
 import { NotificationModule } from './notification/notification.module.js';
 import { TelemedicineModule } from './telemedicine/telemedicine.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ScheduleModule as NestScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [AuthModule, DepartmentModule, PatientModule, AppointmentModule, ScheduleModule, QueueModule, EmrModule, ConsultationModule, LabModule, PharmacyModule, BillingModule, StorageModule, NotificationModule, TelemedicineModule, PrismaModule],
+  imports: [AuthModule, DepartmentModule, PatientModule, AppointmentModule, ScheduleModule, QueueModule, EmrModule, ConsultationModule, LabModule, PharmacyModule, BillingModule, StorageModule, NotificationModule, TelemedicineModule, PrismaModule, NestScheduleModule.forRoot()],
   controllers: [AppController, HealthController],
   providers: [AppService],
 })

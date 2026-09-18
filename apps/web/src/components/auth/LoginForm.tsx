@@ -4,8 +4,8 @@ import { useAuthStore } from '../../store/authStore';
 import api from '../../lib/axios';
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('doctor@hospios.com');
-  const [password, setPassword] = useState('password123');
+  const [username, setUsername] = useState('doctor');
+  const [password, setPassword] = useState('Password@123!');
   const [useMfa, setUseMfa] = useState(false);
   const [mfaToken, setMfaToken] = useState('');
   const [error, setError] = useState('');
@@ -20,7 +20,7 @@ export default function LoginForm() {
 
     try {
       const response = await api.post('/auth/login', { 
-        email, 
+        username, 
         password, 
         mfaToken: useMfa ? mfaToken : undefined 
       });
@@ -42,11 +42,11 @@ export default function LoginForm() {
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-slate-700">Email</label>
+        <label className="block text-sm font-medium text-slate-700">Username</label>
         <input 
-          type="email" 
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text" 
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm p-2 border" 
           required 
         />

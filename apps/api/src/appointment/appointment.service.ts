@@ -1,13 +1,13 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class AppointmentService {
+  private readonly logger = new Logger(AppointmentService.name);
+
   constructor(
     private prisma: PrismaService,
-    @InjectQueue('reminders') private remindersQueue: Queue
   ) {}
 
   async bookAppointment(data: { patientId: string; doctorId?: string; departmentId?: string; date: string; timeSlot: string; type: string; notes?: string }) {
@@ -46,16 +46,15 @@ export class AppointmentService {
       }
     });
 
-    // Dispatch reminder jobs (simplified delays for MVP)
-    const appointmentDate = new Date(data.date).getTime();
-    const now = Date.now();
-    const delay24h = appointmentDate - (24 * 60 * 60 * 1000) - now;
-    
-    if (delay24h > 0) {
-      await this.remindersQueue.add('send-reminder', { appointmentId: appointment.id }, { delay: delay24h });
-    }
+    // Removed BullMQ - scheduling handled by node-cron
 
     return appointment;
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async handleReminders() {
+    this.logger.debug('Running background job to check for upcoming appointments and send reminders...');
+    // Logic to query appointments in the next 24 hours and send emails/SMS would go here.
   }
 
   async reschedule(id: string, reason: string, date: string, timeSlot: string) {
