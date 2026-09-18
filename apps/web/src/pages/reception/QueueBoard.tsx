@@ -19,7 +19,8 @@ export default function QueueBoard() {
           status: item.status,
           time: new Date(item.createdAt).toLocaleTimeString(),
         })));
-      } catch (err: any) {
+      } catch (err) {
+        console.error(err);
         toast.error('Failed to load queue data');
       }
     };

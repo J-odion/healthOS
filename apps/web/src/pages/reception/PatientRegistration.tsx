@@ -25,7 +25,8 @@ export default function PatientRegistration() {
       toast.success('Patient Registered Successfully! Smart Card: ' + res.data.smartCardId);
       // Reset form
       setFormData({ firstName: '', lastName: '', dob: '', gender: 'MALE', phone: '' });
-    } catch (err: any) {
+    } catch (err) {
+      console.error(err);
       // Error is handled by global interceptor, but we can do specific logic here if needed
     }
   };

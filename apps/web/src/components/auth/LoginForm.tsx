@@ -6,6 +6,7 @@ import api from '../../lib/axios';
 export default function LoginForm() {
   const [email, setEmail] = useState('doctor@hospios.com');
   const [password, setPassword] = useState('password123');
+  const [useMfa, setUseMfa] = useState(false);
   const [mfaToken, setMfaToken] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,11 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { email, password, mfaToken });
+      const response = await api.post('/auth/login', { 
+        email, 
+        password, 
+        mfaToken: useMfa ? mfaToken : undefined 
+      });
       const { access_token, user } = response.data;
       setAuth(access_token, user);
       navigate('/');
@@ -56,16 +61,35 @@ export default function LoginForm() {
           required 
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700">MFA Token (Optional)</label>
-        <input 
-          type="text" 
-          value={mfaToken}
-          onChange={(e) => setMfaToken(e.target.value)}
-          className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm p-2 border" 
-          placeholder="6-digit code"
+      <div className="flex items-center pt-2">
+        <input
+          id="use-mfa"
+          type="checkbox"
+          checked={useMfa}
+          onChange={(e) => {
+            setUseMfa(e.target.checked);
+            if (!e.target.checked) setMfaToken('');
+          }}
+          className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-slate-300 rounded"
         />
+        <label htmlFor="use-mfa" className="ml-2 block text-sm text-slate-700">
+          I have an MFA token
+        </label>
       </div>
+
+      {useMfa && (
+        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+          <label className="block text-sm font-medium text-slate-700">MFA Token</label>
+          <input 
+            type="text" 
+            value={mfaToken}
+            onChange={(e) => setMfaToken(e.target.value)}
+            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm p-2 border" 
+            placeholder="6-digit code"
+            required={useMfa}
+          />
+        </div>
+      )}
       <button 
         type="submit" 
         disabled={isLoading}

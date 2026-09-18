@@ -49,8 +49,13 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
         isOpen ? "translate-x-0" : "-translate-x-full"
       )
     )}>
-      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
-        <span className="text-xl font-bold text-brand-600 tracking-tight">HospiOS</span>
+      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100">
+        <div className="flex items-center space-x-2">
+          <img src="/logo.jpg" alt="Logo" className="h-8 w-auto rounded-sm object-contain" />
+          <span className="text-sm font-bold text-brand-700 tracking-tight leading-tight">
+            Government House Clinic
+          </span>
+        </div>
         <button 
           onClick={() => setIsOpen(false)}
           className="md:hidden p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-md"
