@@ -9,9 +9,27 @@ export default function QueueBoard() {
   useEffect(() => {
     const fetchQueue = async () => {
       try {
-        const res = await api.get('/queue');
-        // Example mapping; assuming backend returns an array of queue items
-        setQueue(res.data.map((item: any) => ({
+        // MOCK DATA
+        const mockData = [
+          {
+            id: '1',
+            patient: { firstName: 'John', lastName: 'Doe' },
+            departmentId: 'Cardiology',
+            priority: 'NORMAL',
+            status: 'WAITING',
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: '2',
+            patient: { firstName: 'Jane', lastName: 'Smith' },
+            departmentId: 'Neurology',
+            priority: 'URGENT',
+            status: 'IN_PROGRESS',
+            createdAt: new Date(Date.now() - 3600000).toISOString()
+          }
+        ];
+        
+        setQueue(mockData.map((item: any) => ({
           id: item.id,
           patient: item.patient?.firstName + ' ' + item.patient?.lastName,
           department: item.departmentId, // Mock

@@ -19,11 +19,20 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { 
-        username: email, // backend expects username or identifier
-        password 
-      });
-      const { access_token, user } = response.data;
+      // MOCK DATA
+      const access_token = 'mock_token_123';
+      const roleStr = email.includes('admin') ? 'ADMIN' : 
+                      email.includes('nurse') ? 'NURSE' : 
+                      email.includes('reception') ? 'RECEPTIONIST' :
+                      email.includes('lab') ? 'LAB_TECH' :
+                      email.includes('pharm') ? 'PHARMACIST' :
+                      email.includes('cash') ? 'CASHIER' : 'DOCTOR';
+      const user = {
+        id: '1',
+        email: email,
+        role: roleStr,
+        permissions: ['all']
+      };
       setAuth(access_token, user);
       navigate('/');
     } catch (err: any) {
