@@ -8,14 +8,11 @@ import LoginForm from './components/auth/LoginForm';
 import PatientRegistration from './pages/reception/PatientRegistration';
 import QueueBoard from './pages/reception/QueueBoard';
 import ConsultationRoom from './pages/doctor/ConsultationRoom';
-import { LabDashboard, PharmacyDashboard, BillingDashboard, TriageDashboard } from './pages/stubs/DepartmentStubs';
-
-const DashboardStub = () => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-    <h2 className="text-xl font-semibold text-slate-800 mb-4">Welcome to HospiOS</h2>
-    <p className="text-slate-600">Your premium hospital management dashboard is ready. Select a module from the sidebar.</p>
-  </div>
-);
+import Dashboard from './pages/dashboard/Dashboard';
+import TriageDashboard from './pages/nurse/TriageDashboard';
+import LabDashboard from './pages/lab/LabDashboard';
+import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard';
+import BillingDashboard from './pages/billing/BillingDashboard';
 
 function App() {
   return (
@@ -28,7 +25,7 @@ function App() {
         </Route>
         
         <Route element={<ProtectedLayout />}>
-          <Route path="/" element={<DashboardStub />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/patients" element={
             <div className="space-y-6">
               <PatientRegistration />
