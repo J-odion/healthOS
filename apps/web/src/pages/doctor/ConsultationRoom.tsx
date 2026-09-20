@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Activity, Stethoscope, FlaskConical, Pill, Save, CheckCircle, User, History } from 'lucide-react';
+import { Activity, Stethoscope, FlaskConical, Pill, Save, CheckCircle, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ConsultationRoom() {
