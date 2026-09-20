@@ -1,6 +1,5 @@
 import { Users, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import api from '../../lib/axios';
 import { toast } from 'sonner';
 
 export default function QueueBoard() {

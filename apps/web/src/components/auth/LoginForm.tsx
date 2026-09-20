@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import api from '../../lib/axios';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginForm() {

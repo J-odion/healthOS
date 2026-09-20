@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { UserPlus } from 'lucide-react';
-import api from '../../lib/axios';
 import { toast } from 'sonner';
 
 export default function PatientRegistration() {
