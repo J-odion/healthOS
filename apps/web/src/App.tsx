@@ -22,6 +22,14 @@ import HRDashboard from './pages/hr/HRDashboard';
 import AssetDashboard from './pages/maintenance/AssetDashboard';
 import ClaimsPortal from './pages/billing/ClaimsPortal';
 
+// Enterprise Modules
+import SurgerySchedule from './pages/clinical/SurgerySchedule';
+import AmbulanceDispatch from './pages/emergency/AmbulanceDispatch';
+import BloodBank from './pages/clinical/BloodBank';
+import RadiologyViewer from './pages/clinical/RadiologyViewer';
+import DietaryManagement from './pages/kitchen/DietaryManagement';
+import MortuaryManagement from './pages/admin/MortuaryManagement';
+
 // Patient Portal Pages
 import PatientDashboard from './pages/patient/PatientDashboard';
 import BookAppointment from './pages/patient/BookAppointment';
@@ -60,6 +68,14 @@ function App() {
           <Route path="/hr" element={<HRDashboard />} />
           <Route path="/assets" element={<AssetDashboard />} />
           <Route path="/claims" element={<ClaimsPortal />} />
+          
+          {/* Enterprise Routes */}
+          <Route path="/surgery" element={<SurgerySchedule />} />
+          <Route path="/dispatch" element={<AmbulanceDispatch />} />
+          <Route path="/blood-bank" element={<BloodBank />} />
+          <Route path="/radiology" element={<RadiologyViewer />} />
+          <Route path="/dietary" element={<DietaryManagement />} />
+          <Route path="/mortuary" element={<MortuaryManagement />} />
           
           {/* Patient Routes */}
           <Route path="/patient/dashboard" element={<PatientDashboard />} />

@@ -16,7 +16,13 @@ import {
   ShieldCheck,
   Briefcase,
   Wrench,
-  ShieldPlus
+  ShieldPlus,
+  Scissors,
+  Ambulance,
+  Droplet,
+  Bone,
+  UtensilsCrossed,
+  Snowflake
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -68,6 +74,25 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
   if (roleName === 'CASHIER' || roleName === 'ADMIN' || roleName === 'DIRECTOR') {
     links.push({ name: 'HMO & Claims', to: '/claims', icon: ShieldPlus });
   }
+
+  // Enterprise Modules
+  if (roleName === 'DOCTOR' || roleName === 'NURSE' || roleName === 'ADMIN') {
+    links.push({ name: 'Surgery Schedule', to: '/surgery', icon: Scissors });
+  }
+  if (roleName === 'NURSE' || roleName === 'ADMIN') {
+    links.push({ name: 'Ambulance Dispatch', to: '/dispatch', icon: Ambulance });
+    links.push({ name: 'Blood Bank', to: '/blood-bank', icon: Droplet });
+  }
+  if (roleName === 'DOCTOR' || roleName === 'ADMIN') {
+    links.push({ name: 'Radiology PACS', to: '/radiology', icon: Bone });
+  }
+  if (roleName === 'NURSE' || roleName === 'ADMIN') {
+    links.push({ name: 'Dietary Management', to: '/dietary', icon: UtensilsCrossed });
+  }
+  if (roleName === 'ADMIN' || roleName === 'DIRECTOR') {
+    links.push({ name: 'Mortuary', to: '/mortuary', icon: Snowflake });
+  }
+
   if (roleName === 'ADMIN') {
     links.push({ name: 'IT Admin Panel', to: '/admin', icon: ShieldCheck });
   }

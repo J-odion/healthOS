@@ -1,4 +1,4 @@
-import { Calendar, Video, FileText, Activity, Smartphone, CreditCard } from 'lucide-react';
+import { Calendar, Video, FileText, Activity, Smartphone, CreditCard, Baby, HeartPulse } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function PatientDashboard() {
@@ -62,6 +62,56 @@ export default function PatientDashboard() {
               <div>
                 <p className="font-medium text-slate-800">Prescription: Paracetamol</p>
                 <p className="text-xs text-slate-500">Oct 10, 2026 • Pharmacy</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Maternity / ANC Tracker */}
+      <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-6 border border-pink-100 shadow-sm relative overflow-hidden">
+        <div className="absolute right-0 top-0 opacity-10">
+          <Baby className="w-48 h-48 text-pink-500 transform translate-x-1/4 -translate-y-1/4" />
+        </div>
+        
+        <div className="z-10 relative">
+          <h3 className="text-xl font-bold flex items-center mb-4 text-pink-900">
+            <Baby className="h-6 w-6 mr-2 text-pink-600" /> Antenatal Care Journey
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white/80 p-4 rounded-lg border border-pink-100 text-center backdrop-blur-sm">
+               <p className="text-sm font-medium text-pink-700">Current Week</p>
+               <p className="text-3xl font-bold text-pink-900 mt-1">24<span className="text-lg text-pink-600 font-normal">wks</span></p>
+            </div>
+            
+            <div className="bg-white/80 p-4 rounded-lg border border-pink-100 text-center backdrop-blur-sm">
+               <p className="text-sm font-medium text-pink-700">Est. Due Date</p>
+               <p className="text-xl font-bold text-pink-900 mt-2">Feb 14, 2027</p>
+            </div>
+            
+            <div className="md:col-span-2 bg-white/80 p-4 rounded-lg border border-pink-100 backdrop-blur-sm flex items-center justify-between">
+               <div>
+                 <p className="text-sm font-medium text-pink-700 flex items-center">
+                   <HeartPulse className="h-4 w-4 mr-1 text-red-500" /> Latest Fetal HR
+                 </p>
+                 <p className="text-xl font-bold text-pink-900 mt-1">142 bpm</p>
+               </div>
+               <button className="px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded hover:bg-pink-700 transition-colors">
+                 View Ultrasound
+               </button>
+            </div>
+          </div>
+          
+          <div className="mt-6">
+            <div className="flex justify-between text-xs font-bold text-pink-700 mb-2">
+              <span>Trimester 1</span>
+              <span>Trimester 2</span>
+              <span>Trimester 3</span>
+            </div>
+            <div className="w-full bg-pink-200 rounded-full h-3">
+              <div className="bg-pink-600 h-3 rounded-full relative" style={{ width: '60%' }}>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-5 h-5 bg-white border-4 border-pink-600 rounded-full shadow-md"></div>
               </div>
             </div>
           </div>
