@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Activity, Stethoscope, FlaskConical, Pill, Save, CheckCircle, User } from 'lucide-react';
+import { Activity, Stethoscope, FlaskConical, Pill, Save, CheckCircle, User, Brain, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import InteractiveBodyMap from '../../components/clinical/InteractiveBodyMap';
 
 export default function ConsultationRoom() {
   const [note, setNote] = useState('');
+  const [showAI, setShowAI] = useState(false);
+  const [bodyMapActive, setBodyMapActive] = useState(false);
 
   const patient = {
     name: 'Emily Chen',
@@ -17,6 +20,10 @@ export default function ConsultationRoom() {
   const handleFinish = () => {
     toast.success('Consultation completed and saved to EMR.');
     setNote('');
+  };
+
+  const handleAreaSelect = (area: string) => {
+    setNote(prev => prev + (prev.length > 0 ? '\n' : '') + `[System]: Patient reports issue in ${area}. `);
   };
 
   return (
@@ -45,16 +52,39 @@ export default function ConsultationRoom() {
             <h2 className="text-lg font-semibold text-slate-800 flex items-center">
               <Stethoscope className="mr-2 text-brand-600 h-5 w-5" /> Clinical Note
             </h2>
-            <button className="text-sm px-3 py-1 bg-brand-50 text-brand-700 rounded-md hover:bg-brand-100 transition-colors flex items-center">
-              <Save className="h-4 w-4 mr-1" /> Save Draft
-            </button>
+            <div className="flex space-x-2">
+              <button 
+                onClick={() => setBodyMapActive(!bodyMapActive)}
+                className={`text-sm px-3 py-1 rounded-md transition-colors flex items-center ${bodyMapActive ? 'bg-brand-100 text-brand-700' : 'border border-slate-200 text-slate-600'}`}
+              >
+                {bodyMapActive ? 'Hide Body Map' : 'Show Body Map'}
+              </button>
+              <button 
+                onClick={() => setShowAI(!showAI)}
+                className={`text-sm px-3 py-1 rounded-md transition-colors flex items-center ${showAI ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-brand-50 text-brand-700'}`}
+              >
+                <Brain className="h-4 w-4 mr-1" /> AI Assist
+              </button>
+              <button className="text-sm px-3 py-1 bg-brand-50 text-brand-700 rounded-md hover:bg-brand-100 transition-colors flex items-center">
+                <Save className="h-4 w-4 mr-1" /> Save Draft
+              </button>
+            </div>
           </div>
-          <textarea 
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className="w-full h-64 p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
-            placeholder="Document patient history, symptoms, and examination findings here..."
-          />
+          
+          <div className="flex gap-4">
+            <textarea 
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="flex-1 h-64 p-4 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none transition-all"
+              placeholder="Document patient history, symptoms, and examination findings here..."
+            />
+            
+            {bodyMapActive && (
+               <div className="w-64 animate-in slide-in-from-right-4 fade-in">
+                 <InteractiveBodyMap onAreaSelect={handleAreaSelect} />
+               </div>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-end">
@@ -66,6 +96,33 @@ export default function ConsultationRoom() {
 
       {/* Sidebar Panels (Vitals, Orders) */}
       <div className="w-80 flex flex-col space-y-6">
+        {showAI && (
+          <div className="bg-purple-50 p-5 rounded-xl shadow-sm border border-purple-200 animate-in slide-in-from-right-4 fade-in">
+            <h3 className="font-semibold text-purple-900 flex items-center mb-3 border-b border-purple-100 pb-2">
+              <Brain className="mr-2 text-purple-600 h-5 w-5" /> AI Clinical Assistant
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Differential Diagnosis</p>
+                <ul className="text-sm text-slate-700 list-disc list-inside space-y-1">
+                  <li>Malaria (Consider endemic region)</li>
+                  <li>Typhoid Fever</li>
+                  <li>Viral Upper Respiratory Infection</li>
+                </ul>
+              </div>
+
+              <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 shadow-sm flex items-start">
+                <AlertTriangle className="h-4 w-4 text-orange-600 mr-2 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-orange-800 uppercase tracking-wider mb-0.5">Interaction Alert</p>
+                  <p className="text-xs text-orange-900">Patient has documented allergy to Penicillin. Avoid Amoxicillin if prescribing antibiotics.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Vitals */}
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
           <h3 className="font-semibold text-slate-800 flex items-center mb-4">

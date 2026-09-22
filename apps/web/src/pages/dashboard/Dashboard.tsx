@@ -1,10 +1,10 @@
-import { Users, Activity, FlaskConical, Stethoscope, Clock, Calendar } from 'lucide-react';
+import { Users, Activity, Stethoscope, Clock, Calendar } from 'lucide-react';
 
 export default function Dashboard() {
   const stats = [
     { name: 'Total Patients Today', value: '142', icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-    { name: 'Active Consultations', value: '8', icon: Stethoscope, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-    { name: 'Pending Labs', value: '24', icon: FlaskConical, color: 'text-purple-600', bg: 'bg-purple-100' },
+    { name: 'In-Person Consultations', value: '8', icon: Stethoscope, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    { name: 'Telemedicine Calls', value: '3', icon: Activity, color: 'text-purple-600', bg: 'bg-purple-100' },
     { name: 'Triage Queue', value: '12', icon: Activity, color: 'text-orange-600', bg: 'bg-orange-100' },
   ];
 
@@ -45,6 +45,7 @@ export default function Dashboard() {
           <div className="space-y-4">
             {[
               { time: '10 mins ago', text: 'Dr. Smith finished consultation with John Doe' },
+              { time: '12 mins ago', text: 'Patient Emily Chen joined virtual waiting room' },
               { time: '15 mins ago', text: 'Lab results ready for Jane Smith (CBC)' },
               { time: '1 hour ago', text: 'Emergency triage: Patient admitted to ICU' },
             ].map((activity, i) => (

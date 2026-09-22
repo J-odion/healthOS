@@ -8,7 +8,15 @@ import {
   FlaskConical, 
   Pill, 
   Receipt,
-  X
+  X,
+  Video,
+  BarChart,
+  BedDouble,
+  PackageSearch,
+  ShieldCheck,
+  Briefcase,
+  Wrench,
+  ShieldPlus
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -28,6 +36,7 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
   }
   if (roleName === 'DOCTOR' || roleName === 'ADMIN') {
     links.push({ name: 'Consultations', to: '/consultations', icon: Stethoscope });
+    links.push({ name: 'Telemedicine', to: '/telemedicine', icon: Video });
   }
   if (roleName === 'NURSE' || roleName === 'ADMIN') {
     links.push({ name: 'Triage & Vitals', to: '/triage', icon: Activity });
@@ -38,8 +47,29 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
   if (roleName === 'PHARMACIST' || roleName === 'ADMIN') {
     links.push({ name: 'Pharmacy', to: '/pharmacy', icon: Pill });
   }
+  if (roleName === 'STORE_OFFICER' || roleName === 'ADMIN') {
+    links.push({ name: 'Inventory', to: '/inventory', icon: PackageSearch });
+  }
   if (roleName === 'CASHIER' || roleName === 'ADMIN') {
     links.push({ name: 'Billing', to: '/billing', icon: Receipt });
+  }
+  if (roleName === 'NURSE' || roleName === 'DOCTOR' || roleName === 'ADMIN') {
+    links.push({ name: 'Ward Management', to: '/ward', icon: BedDouble });
+  }
+  if (roleName === 'DIRECTOR' || roleName === 'ADMIN') {
+    links.push({ name: 'Executive Dashboard', to: '/executive', icon: BarChart });
+  }
+  if (roleName === 'ADMIN' || roleName === 'DIRECTOR') {
+    links.push({ name: 'Human Resources', to: '/hr', icon: Briefcase });
+  }
+  if (roleName === 'ADMIN' || roleName === 'STORE_OFFICER') {
+    links.push({ name: 'Assets & Maintenance', to: '/assets', icon: Wrench });
+  }
+  if (roleName === 'CASHIER' || roleName === 'ADMIN' || roleName === 'DIRECTOR') {
+    links.push({ name: 'HMO & Claims', to: '/claims', icon: ShieldPlus });
+  }
+  if (roleName === 'ADMIN') {
+    links.push({ name: 'IT Admin Panel', to: '/admin', icon: ShieldCheck });
   }
 
   return (

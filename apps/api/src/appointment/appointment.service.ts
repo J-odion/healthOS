@@ -34,6 +34,12 @@ export class AppointmentService {
       if (leave) throw new BadRequestException('Doctor is on leave during this period');
     }
 
+    let meetingLink = null;
+    if (data.type === 'TELEMEDICINE') {
+      // Mock generation of a meeting link (e.g., via Daily.co or Twilio)
+      meetingLink = `https://telemed.local/room/${Math.random().toString(36).substring(7)}`;
+    }
+
     const appointment = await this.prisma.appointment.create({
       data: {
         patientId: data.patientId,
@@ -42,7 +48,8 @@ export class AppointmentService {
         date: new Date(data.date),
         timeSlot: data.timeSlot,
         type: data.type,
-        notes: data.notes
+        notes: data.notes,
+        meetingLink: meetingLink
       }
     });
 
@@ -74,6 +81,7 @@ export class AppointmentService {
           timeSlot,
           type: existing.type,
           notes: existing.notes,
+          meetingLink: (existing as any).meetingLink, // or just regenerate
         }
       })
     ]);

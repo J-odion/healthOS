@@ -342,6 +342,7 @@ model Appointment {
   status       String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED, NO_SHOW
   cancelReason String?
   notes        String?
+  meetingLink  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
