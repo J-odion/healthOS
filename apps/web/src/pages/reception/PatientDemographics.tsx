@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { User, Shield, MapPin, Hash, Activity } from 'lucide-react';
+import { User, Shield, MapPin, Hash, Activity, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { useHospitalStore } from '../../store/hospitalStore';
 
 interface Demographics {
   id: string;
@@ -14,28 +15,23 @@ interface Demographics {
 }
 
 export default function PatientDemographics() {
-  const [patients, setPatients] = useState<Demographics[]>([]);
-
+  const globalPatients = useHospitalStore(state => state.patients);
+  const addToTriage = useHospitalStore(state => state.addToTriage);
+  
   useEffect(() => {
-    // Mock Data
-    const mockData: Demographics[] = [
-      { id: '1', name: 'John Doe', age: 45, address: '123 Main St, NY', cardNumber: 'SH-1234', insuranceStatus: 'ACTIVE', lastActive: new Date().toISOString(), isActive: true },
-      { id: '2', name: 'Emily Chen', age: 32, address: '456 Oak Ave, SF', cardNumber: 'PT-9942', insuranceStatus: 'NONE', lastActive: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), isActive: false },
-      { id: '3', name: 'Michael Smith', age: 50, address: '789 Pine Rd, TX', cardNumber: 'SH-5678', insuranceStatus: 'EXPIRED', lastActive: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), isActive: false },
-    ];
+    const data = Object.values(globalPatients).map(p => ({
+      id: p.id,
+      name: p.name,
+      age: p.age,
+      address: 'On File',
+      cardNumber: p.id,
+      insuranceStatus: 'ACTIVE' as const,
+      lastActive: new Date().toISOString(),
+      isActive: true
+    }));
     
-    // Automate file deactivation: Deactivate if inactive for > 2 days (48 hours)
-    const processedData = mockData.map(patient => {
-      const daysInactive = (Date.now() - new Date(patient.lastActive).getTime()) / (1000 * 60 * 60 * 24);
-      if (daysInactive > 2 && patient.isActive) {
-        toast.info(`Patient file for ${patient.name} automatically deactivated due to inactivity.`);
-        return { ...patient, isActive: false };
-      }
-      return patient;
-    });
-
-    setPatients(processedData);
-  }, []);
+    setPatients(data);
+  }, [globalPatients]);
 
   const reactivateFile = (id: string) => {
     setPatients(patients.map(p => {
@@ -45,6 +41,15 @@ export default function PatientDemographics() {
       }
       return p;
     }));
+  };
+
+  const handleAssignToTriage = (id: string, name: string) => {
+    const success = addToTriage(id);
+    if (success) {
+      toast.success(`${name} assigned to Triage. Wallet charged ₦5,000 for Consultation.`);
+    } else {
+      toast.error(`Insufficient wallet funds for ${name} to proceed with consultation.`);
+    }
   };
 
   return (
@@ -97,13 +102,23 @@ export default function PatientDemographics() {
                   {!patient.isActive && <p className="text-xs text-slate-400 mt-1">Inactive &gt; 48h</p>}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  {!patient.isActive ? (
-                    <button onClick={() => reactivateFile(patient.id)} className="text-brand-600 hover:text-brand-900 flex items-center">
-                      <Activity className="h-4 w-4 mr-1" /> Re-activate
-                    </button>
-                  ) : (
-                    <span className="text-slate-400">Up to date</span>
-                  )}
+                  <div className="flex space-x-3 items-center">
+                    {!patient.isActive ? (
+                      <button onClick={() => reactivateFile(patient.id)} className="text-brand-600 hover:text-brand-900 flex items-center">
+                        <Activity className="h-4 w-4 mr-1" /> Re-activate
+                      </button>
+                    ) : (
+                      <span className="text-slate-400">Up to date</span>
+                    )}
+                    {patient.isActive && (
+                      <button 
+                        onClick={() => handleAssignToTriage(patient.id, patient.name)}
+                        className="text-blue-600 hover:text-blue-900 flex items-center transition-colors"
+                      >
+                        Assign to Triage <ArrowRight className="h-4 w-4 ml-1" />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

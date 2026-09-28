@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Calendar, Video, FileText, Activity, Smartphone, CreditCard, Baby, HeartPulse, Scan, UploadCloud, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useHospitalStore } from '../../store/hospitalStore';
 
 export default function PatientDashboard() {
   const navigate = useNavigate();
@@ -15,6 +16,14 @@ export default function PatientDashboard() {
       setShowScanModal(false);
       toast.success('Physical folder scanned and digitized successfully!');
     }, 3000);
+  };
+
+  const currentPatient = useHospitalStore(state => state.patients['PT-9942']);
+  const fundWallet = useHospitalStore(state => state.fundWallet);
+  
+  const handleFundWallet = () => {
+    fundWallet('PT-9942', 10000);
+    toast.success('Wallet successfully funded with ₦10,000.00');
   };
 
   return (
@@ -44,11 +53,13 @@ export default function PatientDashboard() {
           <p className="text-emerald-100 max-w-md text-sm">
             Fund your wallet for seamless cashless payments across all hospital services.
           </p>
-          <p className="text-4xl font-bold mt-4">₦ 45,500.00</p>
+          <p className="text-4xl font-bold mt-4">
+            ₦ {currentPatient?.walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
         </div>
         <div className="z-10 flex space-x-4">
-          <button onClick={() => toast.success('Redirecting to payment gateway...')} className="px-5 py-2.5 bg-white text-emerald-700 hover:bg-slate-100 rounded-xl font-medium text-sm transition-colors shadow-md">
-            Fund Wallet
+          <button onClick={handleFundWallet} className="px-5 py-2.5 bg-white text-emerald-700 hover:bg-slate-100 rounded-xl font-medium text-sm transition-colors shadow-md">
+            Fund Wallet (+₦10k)
           </button>
           <button className="px-5 py-2.5 bg-emerald-800 text-white hover:bg-emerald-900 border border-emerald-700 rounded-xl font-medium text-sm transition-colors shadow-md">
             View History
@@ -91,21 +102,23 @@ export default function PatientDashboard() {
               <Scan className="h-4 w-4 mr-1" /> Scan Folder
             </button>
           </div>
-          <div className="space-y-3">
-            <div className="flex items-center p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
-              <Activity className="h-8 w-8 text-purple-500 bg-purple-100 p-1.5 rounded-lg mr-3" />
-              <div>
-                <p className="font-medium text-slate-800">Complete Blood Count (CBC)</p>
-                <p className="text-xs text-slate-500">Oct 12, 2026 • Lab Result</p>
+          <div className="space-y-3 h-64 overflow-y-auto">
+            {currentPatient?.medicalHistory?.map(record => (
+              <div key={record.id} className="flex items-center p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
+                {record.type === 'LAB' && <Activity className="h-8 w-8 text-purple-500 bg-purple-100 p-1.5 rounded-lg mr-3 flex-shrink-0" />}
+                {record.type === 'PRESCRIPTION' && <FileText className="h-8 w-8 text-teal-500 bg-teal-100 p-1.5 rounded-lg mr-3 flex-shrink-0" />}
+                {record.type === 'NOTE' && <FileText className="h-8 w-8 text-brand-500 bg-brand-100 p-1.5 rounded-lg mr-3 flex-shrink-0" />}
+                {record.type === 'VITALS' && <HeartPulse className="h-8 w-8 text-red-500 bg-red-100 p-1.5 rounded-lg mr-3 flex-shrink-0" />}
+                
+                <div className="overflow-hidden">
+                  <p className="font-medium text-slate-800 truncate">{record.details}</p>
+                  <p className="text-xs text-slate-500">{new Date(record.date).toLocaleDateString()} • {record.provider}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-200 transition-colors">
-              <FileText className="h-8 w-8 text-teal-500 bg-teal-100 p-1.5 rounded-lg mr-3" />
-              <div>
-                <p className="font-medium text-slate-800">Prescription: Paracetamol</p>
-                <p className="text-xs text-slate-500">Oct 10, 2026 • Pharmacy</p>
-              </div>
-            </div>
+            ))}
+            {(!currentPatient?.medicalHistory || currentPatient.medicalHistory.length === 0) && (
+              <div className="p-4 text-center text-slate-500 text-sm">No medical history available.</div>
+            )}
           </div>
         </div>
       </div>

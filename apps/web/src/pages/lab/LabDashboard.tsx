@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import { FlaskConical, Clock, CheckCircle, Search, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { useHospitalStore } from '../../store/hospitalStore';
 
 export default function LabDashboard() {
-  const [orders, setOrders] = useState([
-    { id: 'LAB-001', patient: 'John Doe', test: 'Complete Blood Count (CBC)', status: 'PENDING', time: '10:30 AM', priority: 'NORMAL' },
-    { id: 'LAB-002', patient: 'Jane Smith', test: 'Malaria Parasite', status: 'PROCESSING', time: '11:15 AM', priority: 'URGENT' },
-    { id: 'LAB-003', patient: 'Michael Johnson', test: 'Lipid Profile', status: 'COMPLETED', time: '09:00 AM', priority: 'NORMAL' },
-  ]);
+  const labOrders = useHospitalStore(state => state.labOrders);
+  const completeLabOrder = useHospitalStore(state => state.completeLabOrder);
 
   const [activeOrder, setActiveOrder] = useState<any>(null);
 
-  const handleUploadResults = (e: React.FormEvent) => {
+  const handleUploadResults = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success(`Results uploaded for ${activeOrder.test}`);
-    setOrders(orders.map(o => o.id === activeOrder.id ? { ...o, status: 'COMPLETED' } : o));
+    const formData = new FormData(e.currentTarget);
+    const result = formData.get('result') as string;
+    
+    completeLabOrder(activeOrder.id, result || 'Results attached.');
+    toast.success(`Results uploaded for ${activeOrder.testName}`);
     setActiveOrder(null);
   };
 
@@ -57,16 +58,15 @@ export default function LabDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-200">
-                {orders.map((order) => (
+                {labOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{order.id.toUpperCase()}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-slate-900">{order.patient}</div>
-                      <div className="text-xs text-slate-500 flex items-center mt-1"><Clock className="h-3 w-3 mr-1" /> {order.time}</div>
+                      <div className="text-sm font-medium text-slate-900">{order.patientName}</div>
+                      <div className="text-xs text-slate-500 flex items-center mt-1"><Clock className="h-3 w-3 mr-1" /> {new Date(order.date).toLocaleTimeString()}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
-                      {order.test}
-                      {order.priority === 'URGENT' && <span className="ml-2 text-xs text-red-600 font-medium">(URGENT)</span>}
+                      {order.testName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(order.status)}
@@ -85,6 +85,13 @@ export default function LabDashboard() {
                     </td>
                   </tr>
                 ))}
+                {labOrders.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                      No lab orders available.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

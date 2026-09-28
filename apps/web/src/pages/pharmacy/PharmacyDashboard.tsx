@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { Pill, Search, Package, Check, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useHospitalStore } from '../../store/hospitalStore';
 
 export default function PharmacyDashboard() {
-  const [prescriptions, setPrescriptions] = useState([
-    { id: 'RX-101', patient: 'Sarah Connor', items: ['Amoxicillin 500mg (14)', 'Ibuprofen 400mg (20)'], status: 'PENDING', doctor: 'Dr. Smith' },
-    { id: 'RX-102', patient: 'Tony Stark', items: ['Lisinopril 10mg (30)'], status: 'READY', doctor: 'Dr. Strange' },
-    { id: 'RX-103', patient: 'Bruce Wayne', items: ['Atorvastatin 20mg (30)'], status: 'DISPENSED', doctor: 'Dr. Kyle' },
-  ]);
+  const globalPrescriptions = useHospitalStore(state => state.prescriptions);
+  const dispensePrescription = useHospitalStore(state => state.dispensePrescription);
 
   const [inventory] = useState([
     { name: 'Amoxicillin 500mg', stock: 150, threshold: 50 },
@@ -17,13 +15,8 @@ export default function PharmacyDashboard() {
   ]);
 
   const handleDispense = (id: string) => {
-    setPrescriptions(prescriptions.map(p => p.id === id ? { ...p, status: 'DISPENSED' } : p));
+    dispensePrescription(id);
     toast.success(`Prescription ${id} marked as dispensed.`);
-  };
-
-  const handlePrepare = (id: string) => {
-    setPrescriptions(prescriptions.map(p => p.id === id ? { ...p, status: 'READY' } : p));
-    toast.success(`Prescription ${id} is ready for pickup.`);
   };
 
   return (
@@ -47,19 +40,18 @@ export default function PharmacyDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex-1 overflow-hidden flex flex-col">
           <div className="overflow-y-auto flex-1 p-2">
             <div className="space-y-4">
-              {prescriptions.map((rx) => (
+              {globalPrescriptions.map((rx) => (
                 <div key={rx.id} className="bg-white border border-slate-100 shadow-sm p-5 rounded-xl hover:border-teal-200 transition-colors">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-bold text-slate-800 text-lg">{rx.patient}</h3>
-                        <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{rx.id}</span>
+                        <h3 className="font-bold text-slate-800 text-lg">{rx.patientName}</h3>
+                        <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{rx.id.toUpperCase()}</span>
                       </div>
-                      <p className="text-sm text-slate-500 mt-1">Prescribed by {rx.doctor}</p>
+                      <p className="text-sm text-slate-500 mt-1">Date: {new Date(rx.date).toLocaleTimeString()}</p>
                     </div>
                     <div>
                       {rx.status === 'PENDING' && <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold uppercase tracking-wide">Needs Prep</span>}
-                      {rx.status === 'READY' && <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold uppercase tracking-wide">Ready for Pickup</span>}
                       {rx.status === 'DISPENSED' && <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold uppercase tracking-wide">Dispensed</span>}
                     </div>
                   </div>
@@ -67,21 +59,11 @@ export default function PharmacyDashboard() {
                   <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
                     <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Medications</h4>
                     <ul className="list-disc list-inside space-y-1">
-                      {rx.items.map((item, i) => (
-                        <li key={i} className="text-sm font-medium text-slate-800">{item}</li>
-                      ))}
+                      <li className="text-sm font-medium text-slate-800">{rx.medication}</li>
                     </ul>
                   </div>
 
                   <div className="mt-4 flex justify-end space-x-3">
-                    {rx.status === 'PENDING' && (
-                      <button 
-                        onClick={() => handlePrepare(rx.id)}
-                        className="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium rounded-lg transition-colors text-sm"
-                      >
-                        Mark as Ready
-                      </button>
-                    )}
                     {rx.status !== 'DISPENSED' && (
                       <button 
                         onClick={() => handleDispense(rx.id)}
@@ -93,6 +75,11 @@ export default function PharmacyDashboard() {
                   </div>
                 </div>
               ))}
+              {globalPrescriptions.length === 0 && (
+                <div className="p-8 text-center text-slate-500">
+                  No prescriptions in queue.
+                </div>
+              )}
             </div>
           </div>
         </div>
