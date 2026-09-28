@@ -1,46 +1,61 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import ProtectedLayout from './layouts/ProtectedLayout';
 import PublicLayout from './layouts/PublicLayout';
-import LoginForm from './components/auth/LoginForm';
+import { Activity } from 'lucide-react';
 
-// Import Pages
-import PatientRegistration from './pages/reception/PatientRegistration';
-import QueueBoard from './pages/reception/QueueBoard';
-import ConsultationRoom from './pages/doctor/ConsultationRoom';
-import VirtualConsultationRoom from './pages/doctor/VirtualConsultationRoom';
-import Dashboard from './pages/dashboard/Dashboard';
-import TriageDashboard from './pages/nurse/TriageDashboard';
-import LabDashboard from './pages/lab/LabDashboard';
-import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard';
-import BillingDashboard from './pages/billing/BillingDashboard';
-import ExecutiveDashboard from './pages/dashboard/ExecutiveDashboard';
-import WardManagementBoard from './pages/nurse/WardManagementBoard';
-import InventoryDashboard from './pages/inventory/InventoryDashboard';
-import AdminControlPanel from './pages/admin/AdminControlPanel';
-import HRDashboard from './pages/hr/HRDashboard';
-import AssetDashboard from './pages/maintenance/AssetDashboard';
-import ClaimsPortal from './pages/billing/ClaimsPortal';
+const LoginForm = lazy(() => import('./components/auth/LoginForm'));
+
+// Lazy Import Pages for Performance Optimization
+const PatientRegistration = lazy(() => import('./pages/reception/PatientRegistration'));
+const QueueBoard = lazy(() => import('./pages/reception/QueueBoard'));
+const PatientDemographics = lazy(() => import('./pages/reception/PatientDemographics'));
+const ConsultationRoom = lazy(() => import('./pages/doctor/ConsultationRoom'));
+const VirtualConsultationRoom = lazy(() => import('./pages/doctor/VirtualConsultationRoom'));
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const TriageDashboard = lazy(() => import('./pages/nurse/TriageDashboard'));
+const LabDashboard = lazy(() => import('./pages/lab/LabDashboard'));
+const PharmacyDashboard = lazy(() => import('./pages/pharmacy/PharmacyDashboard'));
+const BillingDashboard = lazy(() => import('./pages/billing/BillingDashboard'));
+const ExecutiveDashboard = lazy(() => import('./pages/dashboard/ExecutiveDashboard'));
+const WardManagementBoard = lazy(() => import('./pages/nurse/WardManagementBoard'));
+const InventoryDashboard = lazy(() => import('./pages/inventory/InventoryDashboard'));
+const AdminControlPanel = lazy(() => import('./pages/admin/AdminControlPanel'));
+const HRDashboard = lazy(() => import('./pages/hr/HRDashboard'));
+const AssetDashboard = lazy(() => import('./pages/maintenance/AssetDashboard'));
+const ClaimsPortal = lazy(() => import('./pages/billing/ClaimsPortal'));
 
 // Enterprise Modules
-import SurgerySchedule from './pages/clinical/SurgerySchedule';
-import AmbulanceDispatch from './pages/emergency/AmbulanceDispatch';
-import BloodBank from './pages/clinical/BloodBank';
-import RadiologyViewer from './pages/clinical/RadiologyViewer';
-import DietaryManagement from './pages/kitchen/DietaryManagement';
-import MortuaryManagement from './pages/admin/MortuaryManagement';
+const SurgerySchedule = lazy(() => import('./pages/clinical/SurgerySchedule'));
+const SpecializedClinics = lazy(() => import('./pages/clinical/SpecializedClinics'));
+const AmbulanceDispatch = lazy(() => import('./pages/emergency/AmbulanceDispatch'));
+const BloodBank = lazy(() => import('./pages/clinical/BloodBank'));
+const RadiologyViewer = lazy(() => import('./pages/clinical/RadiologyViewer'));
+const DietaryManagement = lazy(() => import('./pages/kitchen/DietaryManagement'));
+const MortuaryManagement = lazy(() => import('./pages/admin/MortuaryManagement'));
 
 // Patient Portal Pages
-import PatientDashboard from './pages/patient/PatientDashboard';
-import BookAppointment from './pages/patient/BookAppointment';
-import VirtualWaitingRoom from './pages/patient/VirtualWaitingRoom';
+const PatientDashboard = lazy(() => import('./pages/patient/PatientDashboard'));
+const BookAppointment = lazy(() => import('./pages/patient/BookAppointment'));
+const VirtualWaitingRoom = lazy(() => import('./pages/patient/VirtualWaitingRoom'));
+
+const PageLoader = () => (
+  <div className="flex h-screen w-full items-center justify-center p-8 bg-slate-50">
+    <div className="flex flex-col items-center space-y-4 text-brand-600">
+      <Activity className="h-8 w-8 animate-pulse" />
+      <span className="text-sm font-medium">Loading module...</span>
+    </div>
+  </div>
+);
 
 function App() {
   return (
     <>
       <Toaster position="top-right" richColors />
       <BrowserRouter>
-      <Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/login" element={<LoginForm />} />
         </Route>
@@ -50,6 +65,7 @@ function App() {
           <Route path="/patients" element={
             <div className="space-y-6">
               <PatientRegistration />
+              <PatientDemographics />
               <QueueBoard />
             </div>
           } />
@@ -71,6 +87,7 @@ function App() {
           
           {/* Enterprise Routes */}
           <Route path="/surgery" element={<SurgerySchedule />} />
+          <Route path="/specialized" element={<SpecializedClinics />} />
           <Route path="/dispatch" element={<AmbulanceDispatch />} />
           <Route path="/blood-bank" element={<BloodBank />} />
           <Route path="/radiology" element={<RadiologyViewer />} />
@@ -83,6 +100,7 @@ function App() {
           <Route path="/patient/waiting-room" element={<VirtualWaitingRoom />} />
         </Route>
       </Routes>
+        </Suspense>
     </BrowserRouter>
     </>
   );

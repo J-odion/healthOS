@@ -1,12 +1,24 @@
-import { useState } from 'react';
-import { Activity, Stethoscope, FlaskConical, Pill, Save, CheckCircle, User, Brain, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Activity, Stethoscope, FlaskConical, Pill, Save, CheckCircle, User as UserIcon, Brain, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import InteractiveBodyMap from '../../components/clinical/InteractiveBodyMap';
+import { useSessionStore } from '../../store/sessionStore';
+import { useAuthStore } from '../../store/authStore';
 
 export default function ConsultationRoom() {
   const [note, setNote] = useState('');
   const [showAI, setShowAI] = useState(false);
   const [bodyMapActive, setBodyMapActive] = useState(false);
+  const [submittedNotes, setSubmittedNotes] = useState<{ id: string; text: string; timestamp: string }[]>([]);
+  const [showLabModal, setShowLabModal] = useState(false);
+  const [showRxModal, setShowRxModal] = useState(false);
+  const setClinicalSessionActive = useSessionStore((state) => state.setClinicalSessionActive);
+  const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    setClinicalSessionActive(true);
+    return () => setClinicalSessionActive(false);
+  }, [setClinicalSessionActive]);
 
   const patient = {
     name: 'Emily Chen',
@@ -18,8 +30,26 @@ export default function ConsultationRoom() {
   };
 
   const handleFinish = () => {
+    const timestamp = new Date().toLocaleString();
+    const doctorSignature = `\n\n---\nSigned by: ${user?.email || 'Dr. Unknown'} (Role: ${user?.role || 'Doctor'})\nDate: ${timestamp}`;
+    const finalNote = note + doctorSignature;
+    
+    // In a real app, send `finalNote` to backend here
+    setSubmittedNotes([...submittedNotes, { id: Date.now().toString(), text: finalNote, timestamp }]);
     toast.success('Consultation completed and saved to EMR.');
     setNote('');
+    setClinicalSessionActive(false); // End session
+  };
+
+  const handleEditNote = (id: string) => {
+    const noteToEdit = submittedNotes.find(n => n.id === id);
+    if (noteToEdit) {
+      // Remove signature for editing
+      const textWithoutSig = noteToEdit.text.split('\n\n---')[0];
+      setNote(textWithoutSig);
+      setSubmittedNotes(submittedNotes.filter(n => n.id !== id));
+      setClinicalSessionActive(true);
+    }
   };
 
   const handleAreaSelect = (area: string) => {
@@ -34,7 +64,7 @@ export default function ConsultationRoom() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-start justify-between">
           <div className="flex items-center">
             <div className="h-16 w-16 bg-brand-100 rounded-full flex items-center justify-center mr-4">
-              <User className="h-8 w-8 text-brand-600" />
+              <UserIcon className="h-8 w-8 text-brand-600" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-slate-800">{patient.name}</h2>
@@ -92,6 +122,27 @@ export default function ConsultationRoom() {
             <CheckCircle className="h-5 w-5 mr-2" /> Finish Consultation
           </button>
         </div>
+        
+        {/* Past Records / Submitted Notes */}
+        {submittedNotes.length > 0 && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-6">
+            <h3 className="font-semibold text-slate-800 mb-4">Past Clinical Notes</h3>
+            <div className="space-y-4">
+              {submittedNotes.map((n) => (
+                <div key={n.id} className="p-4 border border-slate-100 rounded-lg bg-slate-50">
+                  <div className="text-xs text-slate-500 mb-2">{n.timestamp}</div>
+                  <div className="text-sm text-slate-700 whitespace-pre-wrap">{n.text}</div>
+                  <button 
+                    onClick={() => handleEditNote(n.id)}
+                    className="mt-3 text-sm text-brand-600 hover:text-brand-700 font-medium"
+                  >
+                    Edit Record
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Sidebar Panels (Vitals, Orders) */}
@@ -152,15 +203,39 @@ export default function ConsultationRoom() {
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-1">
           <h3 className="font-semibold text-slate-800 mb-4">Quick Orders</h3>
           <div className="space-y-3">
-            <button className="w-full flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-brand-300 transition-all text-slate-700 font-medium">
+            <button onClick={() => setShowLabModal(true)} className="w-full flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-brand-300 transition-all text-slate-700 font-medium">
               <FlaskConical className="h-5 w-5 mr-3 text-purple-500" /> Order Lab Test
             </button>
-            <button className="w-full flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-brand-300 transition-all text-slate-700 font-medium">
+            <button onClick={() => setShowRxModal(true)} className="w-full flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-brand-300 transition-all text-slate-700 font-medium">
               <Pill className="h-5 w-5 mr-3 text-teal-500" /> Write Prescription
             </button>
           </div>
         </div>
       </div>
+      
+      {/* Lab Order Modal Stub */}
+      {showLabModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-96">
+            <h3 className="text-lg font-bold mb-4">Order Lab Test</h3>
+            <p className="text-sm text-slate-500 mb-4">Timestamp: {new Date().toLocaleString()}</p>
+            <button onClick={() => { toast.success(`Lab order submitted at ${new Date().toLocaleString()}`); setShowLabModal(false); }} className="w-full bg-brand-600 text-white p-2 rounded-lg">Submit Order</button>
+            <button onClick={() => setShowLabModal(false)} className="w-full mt-2 bg-slate-100 text-slate-700 p-2 rounded-lg">Cancel</button>
+          </div>
+        </div>
+      )}
+      
+      {/* Prescription Modal Stub */}
+      {showRxModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-96">
+            <h3 className="text-lg font-bold mb-4">Write Prescription</h3>
+            <p className="text-sm text-slate-500 mb-4">Timestamp: {new Date().toLocaleString()}</p>
+            <button onClick={() => { toast.success(`Prescription submitted at ${new Date().toLocaleString()}`); setShowRxModal(false); }} className="w-full bg-teal-600 text-white p-2 rounded-lg">Sign & Send</button>
+            <button onClick={() => setShowRxModal(false)} className="w-full mt-2 bg-slate-100 text-slate-700 p-2 rounded-lg">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

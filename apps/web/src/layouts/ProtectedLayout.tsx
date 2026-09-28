@@ -1,12 +1,44 @@
-import { useState } from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, Navigate, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { useSessionStore } from '../store/sessionStore';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
+import { toast } from 'sonner';
+
+const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
 
 export default function ProtectedLayout() {
   const token = useAuthStore((state) => state.token);
+  const logout = useAuthStore((state) => state.logout);
+  const isClinicalSessionActive = useSessionStore((state) => state.isClinicalSessionActive);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (!isClinicalSessionActive) {
+          toast.error('Session expired due to inactivity.');
+          logout();
+          navigate('/login');
+        }
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach((name) => document.addEventListener(name, resetTimer));
+
+    resetTimer(); // Initialize timer
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((name) => document.removeEventListener(name, resetTimer));
+    };
+  }, [isClinicalSessionActive, logout, navigate]);
 
   if (!token) {
     return <Navigate to="/login" replace />;

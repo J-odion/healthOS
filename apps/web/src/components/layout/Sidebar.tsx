@@ -77,6 +77,7 @@ export default function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsO
 
   // Enterprise Modules
   if (roleName === 'DOCTOR' || roleName === 'NURSE' || roleName === 'ADMIN') {
+    links.push({ name: 'Specialized Clinics', to: '/specialized', icon: Scissors });
     links.push({ name: 'Surgery Schedule', to: '/surgery', icon: Scissors });
   }
   if (roleName === 'NURSE' || roleName === 'ADMIN') {

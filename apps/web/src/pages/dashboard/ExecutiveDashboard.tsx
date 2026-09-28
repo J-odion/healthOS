@@ -1,6 +1,6 @@
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend, PieChart, Pie, Cell
+  Legend, PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
 import { TrendingUp, Users, Bed, CreditCard, Activity, DollarSign } from 'lucide-react';
 
@@ -19,6 +19,31 @@ export default function ExecutiveDashboard() {
     { name: 'Laboratory', value: 25 },
     { name: 'Consultations', value: 20 },
     { name: 'Procedures', value: 10 },
+  ];
+
+  const demographicsData = [
+    { name: '0-18 yrs', value: 15 },
+    { name: '19-35 yrs', value: 35 },
+    { name: '36-50 yrs', value: 30 },
+    { name: '51+ yrs', value: 20 },
+  ];
+
+  const diagnosisData = [
+    { name: 'Malaria', count: 1240 },
+    { name: 'Typhoid', count: 850 },
+    { name: 'Hypertension', count: 620 },
+    { name: 'Diabetes', count: 430 },
+    { name: 'URTI', count: 910 },
+  ];
+
+  const admissionsData = [
+    { name: 'Mon', admitted: 12, discharged: 8 },
+    { name: 'Tue', admitted: 15, discharged: 10 },
+    { name: 'Wed', admitted: 8,  discharged: 12 },
+    { name: 'Thu', admitted: 20, discharged: 15 },
+    { name: 'Fri', admitted: 18, discharged: 20 },
+    { name: 'Sat', admitted: 10, discharged: 14 },
+    { name: 'Sun', admitted: 5,  discharged: 8 },
   ];
   const COLORS = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b'];
 
@@ -112,6 +137,74 @@ export default function ExecutiveDashboard() {
               </PieChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+      {/* Charts Row 2: Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Admissions & Discharges */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2">
+          <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
+            <Bed className="h-5 w-5 mr-2 text-brand-600" /> Admissions vs Discharges (This Week)
+          </h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={admissionsData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="#e2e8f0" strokeDasharray="4 4" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} />
+                <Legend verticalAlign="top" height={36} />
+                <Bar dataKey="admitted" name="Admitted" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="discharged" name="Discharged" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Patient Demographics */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
+            <Users className="h-5 w-5 mr-2 text-brand-600" /> Patient Demographics
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={demographicsData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {demographicsData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: any) => `${value}%`} />
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Row 3: Diagnosis Stats */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
+          <Activity className="h-5 w-5 mr-2 text-brand-600" /> Top Diagnosis Statistics (Current Month)
+        </h3>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={diagnosisData} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
+              <CartesianGrid horizontal={false} stroke="#e2e8f0" strokeDasharray="4 4" />
+              <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
+              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569' }} />
+              <Tooltip cursor={{ fill: '#f1f5f9' }} />
+              <Bar dataKey="count" name="Reported Cases" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
