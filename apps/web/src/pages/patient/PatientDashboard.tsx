@@ -16,6 +16,8 @@ export default function PatientDashboard() {
       toast.success('Physical folder scanned and digitized successfully!');
     }, 3000);
   };
+
+  return (
     <div className="max-w-5xl mx-auto space-y-8 p-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <div>

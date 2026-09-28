@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, Ear, UserCheck, Activity, Search, Phone } from 'lucide-react';
+import { Eye, Ear } from 'lucide-react';
 import SurgerySchedule from './SurgerySchedule';
 
 export default function SpecializedClinics() {
