@@ -6,11 +6,13 @@ import PublicLayout from './layouts/PublicLayout';
 import { Activity } from 'lucide-react';
 
 const LoginForm = lazy(() => import('./components/auth/LoginForm'));
+const PatientLoginForm = lazy(() => import('./components/auth/PatientLoginForm'));
 
 // Lazy Import Pages for Performance Optimization
 const PatientRegistration = lazy(() => import('./pages/reception/PatientRegistration'));
 const QueueBoard = lazy(() => import('./pages/reception/QueueBoard'));
 const PatientDemographics = lazy(() => import('./pages/reception/PatientDemographics'));
+const AppointmentManager = lazy(() => import('./pages/reception/AppointmentManager'));
 const ConsultationRoom = lazy(() => import('./pages/doctor/ConsultationRoom'));
 const VirtualConsultationRoom = lazy(() => import('./pages/doctor/VirtualConsultationRoom'));
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
@@ -60,12 +62,16 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
         </Route>
         
+        {/* Dedicated Patient Login - Stands alone from staff PublicLayout if needed, but using it here for consistency */}
+        <Route path="/patient-login" element={<PatientLoginForm />} />
+        
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/patients" element={
             <div className="space-y-6">
               <PatientRegistration />
               <PatientDemographics />
+              <AppointmentManager />
               <QueueBoard />
             </div>
           } />

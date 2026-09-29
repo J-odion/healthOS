@@ -2,15 +2,23 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Video, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { useHospitalStore } from '../../store/hospitalStore';
+import { useAuthStore } from '../../store/authStore';
 
 export default function BookAppointment() {
   const navigate = useNavigate();
-  const [type, setType] = useState('TELEMEDICINE');
+  const user = useAuthStore(state => state.user);
+  const patientId = user?.id || 'PT-9942';
+  const bookAppointment = useHospitalStore(state => state.bookAppointment);
+  const [type, setType] = useState<'IN_PERSON' | 'TELEMEDICINE'>('TELEMEDICINE');
+  const [department, setDepartment] = useState('General Practice');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [reason, setReason] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    bookAppointment(patientId, department, type, date, time, reason);
     toast.success('Appointment booked successfully!');
     navigate('/patient/dashboard');
   };
@@ -41,6 +49,21 @@ export default function BookAppointment() {
                 <p className="text-xs text-slate-500 mt-1">Virtual consultation from home</p>
               </div>
             </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-slate-700">Department</label>
+            <select 
+              value={department}
+              onChange={e => setDepartment(e.target.value)}
+              className="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none bg-white"
+            >
+              <option value="General Practice">General Practice</option>
+              <option value="Cardiology">Cardiology</option>
+              <option value="Pediatrics">Pediatrics</option>
+              <option value="Maternity & ANC">Maternity & ANC</option>
+              <option value="Orthopedics">Orthopedics</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -76,6 +99,8 @@ export default function BookAppointment() {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700">Reason for Visit (Optional)</label>
             <textarea 
+              value={reason}
+              onChange={e => setReason(e.target.value)}
               className="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none resize-none h-24"
               placeholder="Briefly describe your symptoms..."
             />

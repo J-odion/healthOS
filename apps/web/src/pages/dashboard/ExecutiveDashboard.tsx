@@ -2,9 +2,12 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Legend, PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
-import { TrendingUp, Users, Bed, CreditCard, Activity, DollarSign } from 'lucide-react';
+import { TrendingUp, Users, Bed, CreditCard, Activity, DollarSign, MapPin, Link2, FileText, Search } from 'lucide-react';
+import { useState } from 'react';
 
 export default function ExecutiveDashboard() {
+  const [diseaseFilter, setDiseaseFilter] = useState('All');
+  const [locationFilter, setLocationFilter] = useState('Lagos');
   const revenueData = [
     { name: 'Jan', value: 4000000 },
     { name: 'Feb', value: 3000000 },
@@ -60,11 +63,25 @@ export default function ExecutiveDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
         <div>
           <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Executive Dashboard</h2>
-          <p className="text-sm text-slate-500 mt-1">Financial and operational performance overview.</p>
+          <p className="text-sm text-slate-500 mt-1">Hospital-wide operational, clinical, and financial performance overview.</p>
         </div>
+        <div className="mt-4 md:mt-0 flex space-x-3">
+          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 flex items-center shadow-sm">
+            <FileText className="h-4 w-4 mr-2 text-brand-600" /> Export Report
+          </button>
+        </div>
+      </div>
+
+      {/* Quick Links */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center">
+        <span className="text-sm font-semibold text-slate-700 flex items-center"><Link2 className="h-4 w-4 mr-2" /> Quick Links:</span>
+        <button className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Surgery Schedules</button>
+        <button className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Specialized Clinics</button>
+        <button className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Staff Directory (Doctors/Nurses)</button>
+        <button className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Mortuary</button>
       </div>
 
       {/* KPI Cards */}
@@ -190,21 +207,84 @@ export default function ExecutiveDashboard() {
         </div>
       </div>
 
-      {/* Charts Row 3: Diagnosis Stats */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
-          <Activity className="h-5 w-5 mr-2 text-brand-600" /> Top Diagnosis Statistics (Current Month)
-        </h3>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={diagnosisData} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
-              <CartesianGrid horizontal={false} stroke="#e2e8f0" strokeDasharray="4 4" />
-              <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
-              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569' }} />
-              <Tooltip cursor={{ fill: '#f1f5f9' }} />
-              <Bar dataKey="count" name="Reported Cases" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* Charts Row 3: Epidemiological Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Geo-mapping and Filters */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-slate-800 flex items-center">
+              <MapPin className="h-5 w-5 mr-2 text-brand-600" /> Disease Geo-Mapping
+            </h3>
+            <div className="flex space-x-2">
+              <select 
+                value={locationFilter} 
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="text-sm border border-slate-200 rounded p-1 outline-none focus:ring-1 focus:ring-brand-500"
+              >
+                <option value="Lagos">Lagos</option>
+                <option value="Abuja">Abuja</option>
+                <option value="Kano">Kano</option>
+                <option value="Port Harcourt">Port Harcourt</option>
+              </select>
+              <select 
+                value={diseaseFilter} 
+                onChange={(e) => setDiseaseFilter(e.target.value)}
+                className="text-sm border border-slate-200 rounded p-1 outline-none focus:ring-1 focus:ring-brand-500"
+              >
+                <option value="All">All Diseases</option>
+                <option value="Malaria">Malaria</option>
+                <option value="Typhoid">Typhoid</option>
+                <option value="Cholera">Cholera</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="flex-1 bg-slate-100 rounded-lg border border-slate-200 flex flex-col items-center justify-center p-8 relative overflow-hidden">
+             {/* Map Placeholder */}
+             <div className="absolute inset-0 opacity-10 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Nigeria_location_map.svg/1024px-Nigeria_location_map.svg.png')] bg-contain bg-center bg-no-repeat"></div>
+             
+             <div className="z-10 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200 text-center">
+                <MapPin className="h-8 w-8 text-brand-500 mx-auto mb-2" />
+                <p className="font-semibold text-slate-800">Map Data: {locationFilter}</p>
+                <p className="text-xs text-slate-500 mt-1">Showing {diseaseFilter} hotspots.</p>
+                <div className="mt-3 text-sm flex space-x-4 justify-center">
+                  <span className="text-blue-600 font-medium">Male: 45%</span>
+                  <span className="text-pink-600 font-medium">Female: 55%</span>
+                </div>
+                <div className="mt-1 text-xs text-slate-500">Most affected age: 19-35 yrs</div>
+             </div>
+          </div>
+        </div>
+
+        {/* Common Research & Diagnosis Stats */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <h3 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
+            <Search className="h-5 w-5 mr-2 text-brand-600" /> Active Clinical Research & Top Diagnoses
+          </h3>
+          
+          <div className="space-y-4 mb-6">
+            <div className="p-3 bg-brand-50 border border-brand-100 rounded-lg">
+              <p className="text-sm font-semibold text-brand-800">Ongoing Study: Lassa Fever Efficacy</p>
+              <p className="text-xs text-brand-600 mt-1">64 enrolled patients. Led by Dr. Okafor (Infectious Disease Dept).</p>
+            </div>
+            <div className="p-3 bg-purple-50 border border-purple-100 rounded-lg">
+              <p className="text-sm font-semibold text-purple-800">Ongoing Study: Hypertension in Urban Areas</p>
+              <p className="text-xs text-purple-600 mt-1">120 enrolled patients. Led by Dr. Adeyemi (Cardiology).</p>
+            </div>
+          </div>
+
+          <h4 className="text-sm font-medium text-slate-500 uppercase tracking-wider mb-3">Top Diagnoses (Current Month)</h4>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={diagnosisData} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
+                <CartesianGrid horizontal={false} stroke="#e2e8f0" strokeDasharray="4 4" />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 12 }} />
+                <Tooltip cursor={{ fill: '#f1f5f9' }} />
+                <Bar dataKey="count" name="Reported Cases" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

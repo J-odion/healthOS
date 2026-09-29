@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { Calendar, Video, FileText, Activity, Smartphone, CreditCard, Baby, HeartPulse, Scan, UploadCloud, Camera } from 'lucide-react';
+import { Calendar, FileText, Activity, Smartphone, CreditCard, Baby, HeartPulse, Scan, UploadCloud, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useHospitalStore } from '../../store/hospitalStore';
+import { useAuthStore } from '../../store/authStore';
 
 export default function PatientDashboard() {
   const navigate = useNavigate();
   const [showScanModal, setShowScanModal] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [showBookModal, setShowBookModal] = useState(false);
+  const [selectedDept, setSelectedDept] = useState('General Practice');
 
   const handleScan = () => {
     setIsScanning(true);
@@ -18,27 +21,47 @@ export default function PatientDashboard() {
     }, 3000);
   };
 
-  const currentPatient = useHospitalStore(state => state.patients['PT-9942']);
+  const user = useAuthStore(state => state.user);
+  const patientId = user?.id || 'PT-9942'; // Fallback for safety
+  const currentPatient = useHospitalStore(state => state.patients[patientId]);
+  const appointments = useHospitalStore(state => state.appointments.filter(a => a.patientId === patientId));
   const fundWallet = useHospitalStore(state => state.fundWallet);
+  const addToTriage = useHospitalStore(state => state.addToTriage);
   
   const handleFundWallet = () => {
-    fundWallet('PT-9942', 10000);
+    fundWallet(patientId, 10000);
     toast.success('Wallet successfully funded with ₦10,000.00');
+  };
+
+  const handleBookAppointment = () => {
+    const success = addToTriage(patientId, selectedDept);
+    if (success) {
+      toast.success(`Successfully booked for ${selectedDept}. ₦5,000 charged to wallet.`);
+      setShowBookModal(false);
+    } else {
+      toast.error('Insufficient wallet funds. Please fund your wallet first.');
+    }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 p-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Welcome, Emily Chen</h2>
-          <p className="text-slate-500">Patient ID: PT-9942</p>
+          <h2 className="text-2xl font-bold text-slate-800">Welcome, {currentPatient?.name || 'Patient'}</h2>
+          <p className="text-slate-500">Patient ID: {patientId}</p>
         </div>
         <div className="flex space-x-3">
           <button 
             onClick={() => navigate('/patient/book')}
+            className="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg shadow-sm hover:bg-slate-200 font-medium border border-slate-200"
+          >
+            Schedule Visit
+          </button>
+          <button 
+            onClick={() => setShowBookModal(true)}
             className="px-6 py-2 bg-brand-600 text-white rounded-lg shadow-sm hover:bg-brand-700 font-medium"
           >
-            Book Appointment
+            Join Queue Now
           </button>
         </div>
       </div>
@@ -54,7 +77,7 @@ export default function PatientDashboard() {
             Fund your wallet for seamless cashless payments across all hospital services.
           </p>
           <p className="text-4xl font-bold mt-4">
-            ₦ {currentPatient?.walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₦ {(currentPatient?.walletBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
         <div className="z-10 flex space-x-4">
@@ -74,21 +97,27 @@ export default function PatientDashboard() {
             <Calendar className="mr-2 h-5 w-5 text-brand-600" /> Upcoming Appointments
           </h3>
           <div className="space-y-4">
-            <div className="p-4 border border-blue-100 bg-blue-50 rounded-lg flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-slate-800">Follow-up: Persistent Headache</p>
-                <p className="text-sm text-slate-600 flex items-center mt-1">
-                  <Video className="h-4 w-4 mr-1 text-blue-600" /> Telemedicine with Dr. Smith
-                </p>
-                <p className="text-sm text-slate-500 mt-1">Today at 10:30 AM</p>
-              </div>
-              <button 
-                onClick={() => navigate('/patient/waiting-room')}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 shadow-sm"
-              >
-                Join Call
-              </button>
-            </div>
+            {appointments.length === 0 ? (
+              <div className="text-center text-slate-500 py-4 text-sm">No upcoming appointments.</div>
+            ) : (
+              appointments.map(apt => (
+                <div key={apt.id} className="p-4 border border-blue-100 bg-blue-50 rounded-lg flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-slate-800">{apt.department} ({apt.type})</p>
+                    {apt.reason && <p className="text-sm text-slate-600 mt-1">{apt.reason}</p>}
+                    <p className="text-sm text-slate-500 mt-1">{apt.date} at {apt.time}</p>
+                  </div>
+                  {apt.type === 'TELEMEDICINE' && (
+                    <button 
+                      onClick={() => navigate('/patient/waiting-room')}
+                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 shadow-sm"
+                    >
+                      Join Call
+                    </button>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -110,9 +139,19 @@ export default function PatientDashboard() {
                 {record.type === 'NOTE' && <FileText className="h-8 w-8 text-brand-500 bg-brand-100 p-1.5 rounded-lg mr-3 flex-shrink-0" />}
                 {record.type === 'VITALS' && <HeartPulse className="h-8 w-8 text-red-500 bg-red-100 p-1.5 rounded-lg mr-3 flex-shrink-0" />}
                 
-                <div className="overflow-hidden">
-                  <p className="font-medium text-slate-800 truncate">{record.details}</p>
-                  <p className="text-xs text-slate-500">{new Date(record.date).toLocaleDateString()} • {record.provider}</p>
+                <div className="overflow-hidden w-full flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-slate-800 truncate">{record.details}</p>
+                    <p className="text-xs text-slate-500">{new Date(record.date).toLocaleDateString()} • {record.provider}</p>
+                  </div>
+                  {record.status && (
+                    <span className={`px-2 py-1 text-[10px] font-bold rounded-full ${
+                      record.status === 'COMPLETED' || record.status === 'DISPENSED' ? 'bg-green-100 text-green-700' : 
+                      record.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
+                    }`}>
+                      {record.status}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
@@ -238,6 +277,46 @@ export default function PatientDashboard() {
                 className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 flex items-center justify-center"
               >
                 <Camera className="h-4 w-4 mr-2" /> {isScanning ? 'Processing...' : 'Start Scan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Book Consultation Modal */}
+      {showBookModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-xl font-bold text-slate-800 mb-4">Join Triage Queue</h3>
+            <p className="text-sm text-slate-600 mb-4">Select the department you wish to visit. A consultation fee of ₦5,000 will be deducted from your wallet.</p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Department</label>
+              <select 
+                value={selectedDept}
+                onChange={e => setSelectedDept(e.target.value)}
+                className="w-full border border-slate-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-brand-500 bg-white text-slate-700"
+              >
+                <option value="General Practice">General Practice</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Maternity & ANC">Maternity & ANC</option>
+                <option value="Orthopedics">Orthopedics</option>
+              </select>
+            </div>
+
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => setShowBookModal(false)}
+                className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleBookAppointment}
+                className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors flex items-center justify-center"
+              >
+                Pay ₦5,000 & Book
               </button>
             </div>
           </div>

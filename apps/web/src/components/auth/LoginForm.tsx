@@ -89,6 +89,16 @@ export default function LoginForm() {
       >
         {isLoading ? 'Signing in...' : 'Sign in'}
       </button>
+
+      <div className="text-center mt-4">
+        <button 
+          type="button" 
+          onClick={() => navigate('/patient-login')}
+          className="text-sm font-medium text-brand-600 hover:text-brand-500"
+        >
+          Are you a patient? Access your portal here
+        </button>
+      </div>
     </form>
   );
 }

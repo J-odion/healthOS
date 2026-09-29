@@ -1,5 +1,6 @@
-import { X, Printer, CreditCard } from 'lucide-react';
+import { X, Printer, CreditCard, CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useHospitalStore } from '../../store/hospitalStore';
 
 interface IDCardPreviewModalProps {
   isOpen: boolean;
@@ -14,11 +15,24 @@ interface IDCardPreviewModalProps {
 }
 
 export default function IDCardPreviewModal({ isOpen, onClose, patientData }: IDCardPreviewModalProps) {
+  const fundWallet = useHospitalStore(state => state.fundWallet);
+  const addToTriage = useHospitalStore(state => state.addToTriage);
+
   if (!isOpen || !patientData) return null;
 
   const handlePrint = () => {
     toast.success('Sending print job to ID Card Printer...');
     setTimeout(onClose, 1500);
+  };
+
+  const handleBookWalkIn = () => {
+    if (!patientData.hospitalNumber) return;
+    fundWallet(patientData.hospitalNumber, 5000);
+    const success = addToTriage(patientData.hospitalNumber, 'General Practice');
+    if (success) {
+      toast.success('Initial consultation fee funded and Walk-in Appointment booked!');
+      onClose();
+    }
   };
 
   return (
@@ -89,9 +103,14 @@ export default function IDCardPreviewModal({ isOpen, onClose, patientData }: IDC
            <div className="text-xs text-slate-500 font-mono">
              UID: {patientData.uid || 'Pending Assignment'}
            </div>
-          <button onClick={handlePrint} className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg shadow-sm flex items-center text-sm transition-colors">
-            <Printer className="h-4 w-4 mr-2" /> Print ID Card
-          </button>
+          <div className="flex space-x-2">
+            <button onClick={handleBookWalkIn} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm flex items-center text-sm transition-colors">
+              <CalendarPlus className="h-4 w-4 mr-2" /> Book Walk-In
+            </button>
+            <button onClick={handlePrint} className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg shadow-sm flex items-center text-sm transition-colors">
+              <Printer className="h-4 w-4 mr-2" /> Print ID Card
+            </button>
+          </div>
         </div>
       </div>
     </div>

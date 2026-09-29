@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Activity, Users, AlertCircle, CheckCircle } from 'lucide-react';
+import { Activity, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useHospitalStore } from '../../store/hospitalStore';
 

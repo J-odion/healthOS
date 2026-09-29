@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bed, User, Activity, CheckCircle, Pill, AlertCircle } from 'lucide-react';
+import { Bed, User, Activity, CheckCircle, Pill, AlertCircle, Crown, Skull } from 'lucide-react';
 import { toast } from 'sonner';
 
 type BedStatus = 'OCCUPIED' | 'AVAILABLE' | 'CLEANING';
@@ -11,6 +11,7 @@ interface WardBed {
   patientName?: string;
   admissionDate?: string;
   attending?: string;
+  isVIP?: boolean;
 }
 
 export default function WardManagementBoard() {
@@ -20,6 +21,7 @@ export default function WardManagementBoard() {
   const beds: WardBed[] = Array.from({ length: 15 }).map((_, i) => {
     const isOccupied = [1, 3, 4, 7, 8, 12, 14].includes(i + 1);
     const isCleaning = [5].includes(i + 1);
+    const isVIP = [14, 15].includes(i + 1);
     
     return {
       id: `bed-${i + 1}`,
@@ -27,11 +29,19 @@ export default function WardManagementBoard() {
       status: isOccupied ? 'OCCUPIED' : (isCleaning ? 'CLEANING' : 'AVAILABLE'),
       patientName: isOccupied ? `Patient ${i + 1} Doe` : undefined,
       admissionDate: isOccupied ? 'Oct 20, 2026' : undefined,
-      attending: isOccupied ? 'Dr. Smith' : undefined
+      attending: isOccupied ? 'Dr. Smith' : undefined,
+      isVIP
     };
   });
 
-  const getStatusColor = (status: BedStatus) => {
+  const getStatusColor = (status: BedStatus, isVIP?: boolean) => {
+    if (isVIP) {
+       switch (status) {
+         case 'OCCUPIED': return 'bg-gradient-to-br from-yellow-100 to-yellow-50 border-yellow-400 text-yellow-900';
+         case 'CLEANING': return 'bg-orange-100 border-yellow-400 text-orange-900';
+         case 'AVAILABLE': return 'bg-gradient-to-br from-yellow-50 to-white border-yellow-300 text-yellow-800';
+       }
+    }
     switch (status) {
       case 'OCCUPIED': return 'bg-brand-100 border-brand-300 text-brand-800';
       case 'CLEANING': return 'bg-orange-100 border-orange-300 text-orange-800';
@@ -43,6 +53,18 @@ export default function WardManagementBoard() {
     toast.success('Medication administered and logged to MAR.');
   };
 
+  const handleRecordVitals = () => {
+    toast.success('New vitals recorded successfully.');
+  };
+
+  const handleRecordDeath = () => {
+    if (confirm(`Are you sure you want to declare ${selectedBed?.patientName} deceased?`)) {
+      const time = new Date().toLocaleTimeString();
+      toast.error(`Time of death recorded at ${time} by Dr. Smith. Bed marked for cleaning.`);
+      setSelectedBed(null);
+    }
+  };
+
   return (
     <div className="h-full flex space-x-6">
       <div className="flex-1 flex flex-col space-y-6">
@@ -52,6 +74,7 @@ export default function WardManagementBoard() {
             <p className="text-slate-500">15-Bed Capacity Overview</p>
           </div>
           <div className="flex space-x-4 text-sm">
+            <span className="flex items-center"><Crown className="w-4 h-4 text-yellow-500 mr-1" /> VIP (2)</span>
             <span className="flex items-center"><div className="w-3 h-3 rounded-full bg-brand-500 mr-2" /> Occupied (7)</span>
             <span className="flex items-center"><div className="w-3 h-3 rounded-full bg-emerald-500 mr-2" /> Available (7)</span>
             <span className="flex items-center"><div className="w-3 h-3 rounded-full bg-orange-500 mr-2" /> Cleaning (1)</span>
@@ -64,11 +87,16 @@ export default function WardManagementBoard() {
               <div 
                 key={bed.id}
                 onClick={() => setSelectedBed(bed)}
-                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${getStatusColor(bed.status)} ${selectedBed?.id === bed.id ? 'ring-2 ring-brand-500 ring-offset-2' : 'hover:shadow-md'}`}
+                className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${getStatusColor(bed.status, bed.isVIP)} ${selectedBed?.id === bed.id ? 'ring-2 ring-brand-500 ring-offset-2' : 'hover:shadow-md'} ${bed.isVIP ? 'shadow-[0_0_15px_rgba(234,179,8,0.25)]' : ''}`}
               >
+                {bed.isVIP && (
+                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center border border-yellow-200 animate-in zoom-in">
+                    <Crown className="w-3 h-3 mr-1" /> VIP
+                  </div>
+                )}
                 <div className="flex justify-between items-start mb-3">
                   <span className="font-bold text-lg opacity-80">#{bed.number}</span>
-                  <Bed className="h-5 w-5 opacity-70" />
+                  <Bed className={`h-5 w-5 ${bed.isVIP ? 'text-yellow-600' : 'opacity-70'}`} />
                 </div>
                 {bed.status === 'OCCUPIED' ? (
                   <div className="space-y-1">
@@ -150,8 +178,17 @@ export default function WardManagementBoard() {
                   <p className="font-bold text-slate-800">36.8 °C</p>
                 </div>
               </div>
-              <button className="w-full mt-4 py-2 border border-slate-200 text-slate-600 font-medium rounded hover:bg-slate-50 transition-colors">
+              <button onClick={handleRecordVitals} className="w-full mt-4 py-2 border border-slate-200 text-slate-600 font-medium rounded hover:bg-slate-50 transition-colors">
                 Record New Vitals
+              </button>
+            </div>
+
+            <div className="pt-4 mt-4 border-t border-slate-100">
+              <button 
+                onClick={handleRecordDeath}
+                className="w-full flex items-center justify-center py-2 bg-red-50 text-red-700 font-medium rounded hover:bg-red-100 border border-red-200 transition-colors"
+              >
+                <Skull className="h-4 w-4 mr-2" /> Record Pronouncement of Death
               </button>
             </div>
           </div>

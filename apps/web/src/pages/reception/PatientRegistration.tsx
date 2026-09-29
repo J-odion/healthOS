@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { UserPlus, Camera, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import IDCardPreviewModal from '../../components/reception/IDCardPreviewModal';
+import { useHospitalStore, type Patient } from '../../store/hospitalStore';
 
 export default function PatientRegistration() {
   const [formData, setFormData] = useState({
@@ -15,17 +16,32 @@ export default function PatientRegistration() {
   });
   const [showModal, setShowModal] = useState(false);
   const [registeredData, setRegisteredData] = useState<any>(null);
+  const registerPatient = useHospitalStore(state => state.registerPatient);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const smartCardId = 'SHSH-' + Math.floor(1000 + Math.random() * 9000);
       
+      const newPatient: Patient = {
+        id: smartCardId,
+        name: `${formData.firstName} ${formData.lastName}`,
+        age: new Date().getFullYear() - new Date(formData.dob).getFullYear(),
+        gender: formData.gender,
+        bloodGroup: formData.bloodGroup,
+        genotype: 'Unknown',
+        walletBalance: 0,
+        walletHistory: [],
+        medicalHistory: []
+      };
+
+      registerPatient(newPatient);
+
       setRegisteredData({
+        ...newPatient,
         firstName: formData.firstName,
         lastName: formData.lastName,
         hospitalNumber: smartCardId,
-        bloodGroup: formData.bloodGroup,
         uid: formData.uid
       });
       setShowModal(true);

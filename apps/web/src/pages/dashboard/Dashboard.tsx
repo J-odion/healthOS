@@ -1,6 +1,8 @@
-import { Users, Activity, Stethoscope, Clock, Calendar } from 'lucide-react';
+import { Users, Activity, Stethoscope, Clock, Calendar, Search, Link2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const stats = [
     { name: 'Total Patients Today', value: '142', icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
     { name: 'In-Person Consultations', value: '8', icon: Stethoscope, color: 'text-emerald-600', bg: 'bg-emerald-100' },
@@ -37,6 +39,15 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Quick Links */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center">
+        <span className="text-sm font-semibold text-slate-700 flex items-center"><Link2 className="h-4 w-4 mr-2" /> Quick Links:</span>
+        <button onClick={() => navigate('/admin/surgery')} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Surgery Schedules</button>
+        <button onClick={() => navigate('/admin/specialized')} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Specialized Clinics</button>
+        <button onClick={() => navigate('/admin/directory')} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Staff Directory</button>
+        <button onClick={() => navigate('/admin/mortuary')} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded text-sm hover:bg-brand-50 hover:text-brand-700 transition-colors">Mortuary</button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
@@ -63,7 +74,21 @@ export default function Dashboard() {
           <div className="w-full bg-brand-900 rounded-full h-3 mb-2">
             <div className="bg-white h-3 rounded-full" style={{ width: '85%' }}></div>
           </div>
-          <p className="text-sm text-brand-200 font-medium text-right">85% Full</p>
+          <p className="text-sm text-brand-200 font-medium text-right mb-6">85% Full</p>
+
+          <h3 className="text-lg font-bold flex items-center mb-4 mt-4 border-t border-brand-500 pt-4">
+            <Search className="h-5 w-5 mr-2" /> Active Clinical Research
+          </h3>
+          <div className="space-y-3">
+            <div className="p-3 bg-white/10 rounded-lg">
+              <p className="text-sm font-semibold">Study: Lassa Fever Efficacy</p>
+              <p className="text-xs text-brand-100 mt-1">64 enrolled patients. Led by Dr. Okafor.</p>
+            </div>
+            <div className="p-3 bg-white/10 rounded-lg">
+              <p className="text-sm font-semibold">Study: Hypertension in Urban Areas</p>
+              <p className="text-xs text-brand-100 mt-1">120 enrolled patients. Led by Dr. Adeyemi.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
