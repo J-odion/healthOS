@@ -192,9 +192,15 @@ export default function ConsultationRoom() {
             <div className="h-16 w-16 bg-brand-100 rounded-full flex items-center justify-center mr-4">
               <UserIcon className="h-8 w-8 text-brand-600" />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-slate-800">{activePatient.patientName}</h2>
-              <p className="text-sm text-slate-500">ID: {activePatient.patientId}</p>
+            <div 
+              className="cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors"
+              onClick={() => setShowHistoryModal(true)}
+            >
+              <h2 className="text-2xl font-bold text-slate-800 flex items-center">
+                {activePatient.patientName} 
+                <span className="ml-2 text-xs bg-brand-100 text-brand-700 px-2 py-1 rounded-full uppercase tracking-wider">View Full Profile</span>
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">ID: {activePatient.patientId}</p>
             </div>
           </div>
           <div className="flex space-x-3 items-center">
@@ -485,13 +491,20 @@ export default function ConsultationRoom() {
       {showHistoryModal && activePatientFullData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-slate-200 flex justify-between items-center">
+            <div className="p-6 border-b border-slate-200 flex justify-between items-start bg-slate-50 rounded-t-xl">
               <div>
-                <h3 className="text-2xl font-bold text-slate-800">Medical History: {activePatientFullData.name}</h3>
-                <p className="text-slate-500">ID: {activePatientFullData.id} • Total Expenditure: ₦{activePatientFullData.walletHistory.filter(h => h.type === 'DEBIT').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</p>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Patient Profile & Medical History</h3>
+                <div className="flex flex-wrap gap-4 text-sm text-slate-700 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                  <div className="flex flex-col"><span className="text-xs text-slate-500 uppercase tracking-wider">Patient Name</span><span className="font-semibold text-base">{activePatientFullData.name}</span></div>
+                  <div className="flex flex-col"><span className="text-xs text-slate-500 uppercase tracking-wider">ID</span><span className="font-semibold">{activePatientFullData.id}</span></div>
+                  <div className="flex flex-col"><span className="text-xs text-slate-500 uppercase tracking-wider">Age/Gender</span><span className="font-semibold">{activePatientFullData.age} yrs • {activePatientFullData.gender}</span></div>
+                  <div className="flex flex-col"><span className="text-xs text-slate-500 uppercase tracking-wider">Blood Group</span><span className="font-semibold text-red-600">{activePatientFullData.bloodGroup || 'N/A'}</span></div>
+                  <div className="flex flex-col"><span className="text-xs text-slate-500 uppercase tracking-wider">Genotype</span><span className="font-semibold text-purple-600">{activePatientFullData.genotype || 'N/A'}</span></div>
+                  <div className="flex flex-col"><span className="text-xs text-slate-500 uppercase tracking-wider">Total Expenditure</span><span className="font-semibold">₦{activePatientFullData.walletHistory.filter(h => h.type === 'DEBIT').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</span></div>
+                </div>
               </div>
-              <button onClick={() => setShowHistoryModal(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="h-6 w-6" />
+              <button onClick={() => setShowHistoryModal(false)} className="text-slate-400 hover:text-slate-600 p-2 bg-white rounded-full shadow-sm">
+                <X className="h-5 w-5" />
               </button>
             </div>
             <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-slate-50">

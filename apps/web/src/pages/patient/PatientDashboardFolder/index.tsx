@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Calendar, FileText, Activity, Smartphone, CreditCard, Baby, HeartPulse, Scan, UploadCloud, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useHospitalStore } from '../../store/hospitalStore';
-import { useAuthStore } from '../../store/authStore';
+import { useHospitalStore } from '../../../store/hospitalStore';
+import { useAuthStore } from '../../../store/authStore';
 
 export default function PatientDashboard() {
   const navigate = useNavigate();

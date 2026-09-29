@@ -38,7 +38,7 @@ const DietaryManagement = lazy(() => import('./pages/kitchen/DietaryManagement')
 const MortuaryManagement = lazy(() => import('./pages/admin/MortuaryManagement'));
 
 // Patient Portal Pages
-const PatientDashboard = lazy(() => import('./pages/patient/PatientDashboard'));
+const PatientDashboard = lazy(() => import('./pages/patient/PatientDashboardFolder'));
 const BookAppointment = lazy(() => import('./pages/patient/BookAppointment'));
 const VirtualWaitingRoom = lazy(() => import('./pages/patient/VirtualWaitingRoom'));
 
