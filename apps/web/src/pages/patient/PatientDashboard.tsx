@@ -24,7 +24,8 @@ export default function PatientDashboard() {
   const user = useAuthStore(state => state.user);
   const patientId = user?.id || 'PT-9942'; // Fallback for safety
   const currentPatient = useHospitalStore(state => state.patients[patientId]);
-  const appointments = useHospitalStore(state => state.appointments.filter(a => a.patientId === patientId));
+  const allAppointments = useHospitalStore(state => state.appointments);
+  const appointments = allAppointments.filter(a => a.patientId === patientId);
   const fundWallet = useHospitalStore(state => state.fundWallet);
   const addToTriage = useHospitalStore(state => state.addToTriage);
   
